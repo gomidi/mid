@@ -6,7 +6,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/gomidi/midi/mid"
+	"github.com/gomidi/mid"
 	"github.com/gomidi/midi/smf"
 )
 
