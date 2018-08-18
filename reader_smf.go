@@ -12,8 +12,10 @@ import (
 //
 // The messages are dispatched to the corresponding attached functions of the handler.
 //
-// They must be attached before Handler.ReadSMF is called
+// They must be attached before Reader.ReadSMF is called
 // and they must not be unset or replaced until ReadSMF returns.
+// For more infomation about dealing with the SMF midi messages, see NewReader and
+// SMFPosition.
 func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 	r.errSMF = nil
 	r.pos = &SMFPosition{}
@@ -35,6 +37,8 @@ func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 //
 // They must be attached before Reader.ReadSMF is called
 // and they must not be unset or replaced until ReadSMF returns.
+// For more infomation about dealing with the SMF midi messages, see NewReader and
+// SMFPosition.
 func (r *Reader) ReadSMF(src io.Reader, options ...smfreader.Option) error {
 	r.errSMF = nil
 	r.pos = &SMFPosition{}

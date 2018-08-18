@@ -122,7 +122,23 @@ type Reader struct {
 	errSMF error
 }
 
-// NewReader returns a new reader
+// NewReader returns a new reader that allows the reading of either "over the wire" MIDI
+// data (via Read) or SMF MIDI data (via ReadSMF or ReadSMFFile).
+//
+// Before any of the Read* methods, callbacks for the interesting MIDI messages need
+// to be attached to the Reader.
+//
+// It is possible to share the same Reader and callbacks for reading of the wire MIDI
+// and SMF Midi data. However, only channel messages and system exclusive message
+// may be used in both cases. To enable this, the corresponding callbacks
+// get a pointer to the SMFPosition of the MIDI message. This pointer is always nil
+// for over the wire MIDI data and never nil when reading from a SMF.
+//
+// The SMF header callback and the meta message callbacks are only called, when reading data
+// from an SMF. Therefor the passed SMFPosition is no pointer.
+//
+// System common and realtime message callback will only be called when reading MIDI over the wire,
+// so they get no SMFPosition.
 func NewReader(opts ...ReaderOption) *Reader {
 	h := &Reader{logger: logfunc(printf)}
 
