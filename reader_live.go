@@ -12,10 +12,11 @@ import (
 //
 // Read does not close the src.
 //
-// The messages are dispatched to the corresponding attached functions of the handler.
+// The messages are dispatched to the corresponding attached functions of the Reader.
 //
 // They must be attached before Reader.Read is called
 // and they must not be unset or replaced until Read returns.
+// For more infomation about dealing with the MIDI messages, see Reader.
 func (r *Reader) Read(src io.Reader, options ...midireader.Option) (err error) {
 	r.pos = nil
 	rd := midireader.New(src, r.dispatchRealTime, options...)

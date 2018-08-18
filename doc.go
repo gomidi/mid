@@ -3,8 +3,8 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package mid provides an easy abstraction for reading and writing of MIDI data live or from SMF files.
-For a simple example see examples/simple/simple_test.go.
+Package mid provides an easy abstraction for reading and writing of MIDI data live or from SMF
+(Standard MIDI File) files. For a simple example see examples/simple/simple_test.go.
 
 */
 package mid

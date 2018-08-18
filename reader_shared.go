@@ -11,134 +11,7 @@ import (
 	"github.com/gomidi/midi/smf"
 )
 
-// Reader reads the midi messages coming from an SMF file or a live stream.
-//
-// The messages are dispatched to the corresponding functions that are not nil.
-//
-// The desired functions must be attached before Handler.ReadLive or Handler.ReadSMF is called
-// and they must not be changed while these methods are running.
-type Reader struct {
-	tempoChanges []tempoChange
-	header       smf.Header
-
-	// callback functions for SMF (Standard MIDI File) header data
-	SMFHeader func(smf.Header)
-
-	// callback functions for MIDI messages
-	Message struct {
-		// is called in addition to other functions, if set.
-		Each func(*SMFPosition, midi.Message)
-
-		// undefined or unknown messages
-		Unknown func(p *SMFPosition, msg midi.Message)
-
-		// meta messages (only in SMF files)
-		Meta struct {
-			// SMF general settings
-			Copyright     func(p SMFPosition, text string)
-			Tempo         func(p SMFPosition, bpm uint32)
-			TimeSignature func(p SMFPosition, num, denom uint8)
-			KeySignature  func(p SMFPosition, key uint8, ismajor bool, num_accidentals uint8, accidentals_are_flat bool)
-
-			// SMF tracks and sequence definitions
-			Track          func(p SMFPosition, name string)
-			Sequence       func(p SMFPosition, name string)
-			SequenceNumber func(p SMFPosition, number uint16)
-
-			// SMF text entries
-			Marker   func(p SMFPosition, text string)
-			Cuepoint func(p SMFPosition, text string)
-			Text     func(p SMFPosition, text string)
-			Lyric    func(p SMFPosition, text string)
-
-			// SMF diverse
-			EndOfTrack        func(p SMFPosition)
-			DevicePort        func(p SMFPosition, name string)
-			ProgramName       func(p SMFPosition, text string)
-			SMPTEOffset       func(p SMFPosition, hour, minute, second, frame, fractionalFrame byte)
-			SequencerSpecific func(p SMFPosition, data []byte)
-
-			// deprecated
-			MIDIChannel func(p SMFPosition, channel uint8)
-			MIDIPort    func(p SMFPosition, port uint8)
-		}
-
-		// channel messages, may be in SMF files and in live data
-		// for live data *SMFPosition is nil
-		Channel struct {
-			// NoteOn is just called for noteon messages with a velocity > 0
-			// noteon messages with velocity == 0 will trigger NoteOff with a velocity of 0
-			NoteOn func(p *SMFPosition, channel, key, velocity uint8)
-
-			// NoteOff is triggered by noteoff messages (then the given velocity is passed)
-			// and by noteon messages of velocity 0 (then velocity is 0)
-			NoteOff func(p *SMFPosition, channel, key, velocity uint8)
-
-			// PolyphonicAfterTouch aka key pressure
-			PolyphonicAfterTouch func(p *SMFPosition, channel, key, pressure uint8)
-
-			ControlChange func(p *SMFPosition, channel, controller, value uint8)
-			ProgramChange func(p *SMFPosition, channel, program uint8)
-
-			// AfterTouch aka channel pressure
-			AfterTouch func(p *SMFPosition, channel, pressure uint8)
-			PitchBend  func(p *SMFPosition, channel uint8, value int16)
-		}
-
-		// realtime messages: just in live data
-		Realtime struct {
-			Reset       func()
-			Clock       func()
-			Tick        func()
-			Start       func()
-			Continue    func()
-			Stop        func()
-			ActiveSense func()
-		}
-
-		// system common messages: just in live data
-		SystemCommon struct {
-			TuneRequest         func()
-			SongSelect          func(num uint8)
-			SongPositionPointer func(pos uint16)
-			MIDITimingCode      func(frame uint8)
-		}
-
-		// system exclusive, may be in SMF files and in live data
-		// for live data *SMFPosition is nil
-		SystemExcluse struct {
-			Complete func(p *SMFPosition, data []byte)
-			Start    func(p *SMFPosition, data []byte)
-			Continue func(p *SMFPosition, data []byte)
-			End      func(p *SMFPosition, data []byte)
-			Escape   func(p *SMFPosition, data []byte)
-		}
-	}
-
-	// optional logger
-	logger Logger
-
-	pos    *SMFPosition
-	errSMF error
-}
-
-// NewReader returns a new reader that allows the reading of either "over the wire" MIDI
-// data (via Read) or SMF MIDI data (via ReadSMF or ReadSMFFile).
-//
-// Before any of the Read* methods, callbacks for the interesting MIDI messages need
-// to be attached to the Reader.
-//
-// It is possible to share the same Reader and callbacks for reading of the wire MIDI
-// and SMF Midi data. However, only channel messages and system exclusive message
-// may be used in both cases. To enable this, the corresponding callbacks
-// get a pointer to the SMFPosition of the MIDI message. This pointer is always nil
-// for over the wire MIDI data and never nil when reading from a SMF.
-//
-// The SMF header callback and the meta message callbacks are only called, when reading data
-// from an SMF. Therefor the passed SMFPosition is no pointer.
-//
-// System common and realtime message callback will only be called when reading MIDI over the wire,
-// so they get no SMFPosition.
+// NewReader returns a new reader
 func NewReader(opts ...ReaderOption) *Reader {
 	h := &Reader{logger: logfunc(printf)}
 
@@ -149,7 +22,7 @@ func NewReader(opts ...ReaderOption) *Reader {
 	return h
 }
 
-func (r *Reader) registerTempoChange(pos SMFPosition, bpm uint32) {
+func (r *Reader) saveTempoChange(pos SMFPosition, bpm uint32) {
 	r.tempoChanges = append(r.tempoChanges, tempoChange{pos.AbsoluteTicks, bpm})
 }
 
@@ -259,7 +132,7 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 			}
 
 		case meta.Tempo:
-			r.registerTempoChange(*r.pos, msg.BPM())
+			r.saveTempoChange(*r.pos, msg.BPM())
 			if r.Message.Meta.Tempo != nil {
 				r.Message.Meta.Tempo(*r.pos, msg.BPM())
 			}
@@ -421,58 +294,6 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 	}
 
 	return
-}
-
-/*
-These are differences  some differences between the two:
-  - SMF events have a message and a delta time while live MIDI just has messages
-  - a SMF file has a header
-  - a SMF file may have meta messages (e.g. track name, copyright etc) while live MIDI must not have them
-  - live MIDI may have realtime and syscommon messages while a SMF must not have them
-
-In sum the only MIDI message handling that could be shared in practice is the handling of channel
-and sysex messages.
-
-That is reflected in the type signature of the callbacks and results in three kinds of callbacks:
-  - The ones that don't receive a SMFPosition are called for messages that may only appear live
-  - The ones with that receive a SMFPosition are called for messages that may only appear
-    within a SMF file
-  - The onse with that receive a *SMFPosition are called for messages that may appear live
-    and within a SMF file. In a SMF file the pointer is never nil while in a live situation it always is.
-
-Due to the nature of a SMF file, the tracks have no "assigned numbers", and can in the worst case just be
-distinguished by the order in which they appear inside the file.
-
-In addition the delta times are just relative to the previous message inside the track.
-
-This has some severe consequences:
-
-  - Eeven if the user is just interested in some kind of messages (e.g. note on and note off),
-    he still has to deal with the delta times of every message.
-  - At the beginning of each track he has to reset the tracking time.
-
-This procedure is error prone and therefor SMFPosition provides a helper that contains not just
-the original delta (which shouldn't be needed most of the time), but also the absolute position (in ticks)
-and order number of the track in which the message appeared.
-
-This way the user can ignore the messages and tracks he is not interested in.
-
-See the example for a handler that handles both live and SMF messages.
-
-For writing there is a LiveWriter for "over the wire" writing and a SMFWriter to write SMF files.
-
-*/
-
-// SMFPosition is the position of the event inside a standard midi file (SMF).
-type SMFPosition struct {
-	// the Track number
-	Track int16
-
-	// DeltaTicks is number of ticks that passed since the previous message in the same track
-	DeltaTicks uint32
-
-	// AbsoluteTicks is the number of ticks that passed since the beginning of the track
-	AbsoluteTicks uint64
 }
 
 type tempoChange struct {

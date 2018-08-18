@@ -1,5 +1,5 @@
 # mid
-Porcelain library for reading and writing MIDI and SMF
+Porcelain library for reading and writing MIDI and SMF (Standard MIDI File) 
 
 Based on https://github.com/gomidi/midi.
 
