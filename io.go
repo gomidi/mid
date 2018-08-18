@@ -7,6 +7,7 @@ import (
 // In is an interface for external/over the wire MIDI input
 type In interface {
 	SetListener(func([]byte))
+	StopListening()
 }
 
 // Out is an interface for external/over the wire MIDI output

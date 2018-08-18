@@ -26,6 +26,10 @@ type in struct {
 	rtmidi.MIDIIn
 }
 
+func (i *in) StopListening() {
+	i.CancelCallback()
+}
+
 func (i *in) SetListener(f func([]byte)) {
 	i.SetCallback(func(_ rtmidi.MIDIIn, bt []byte, _ float64) {
 		f(bt)

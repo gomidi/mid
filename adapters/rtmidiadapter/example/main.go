@@ -9,27 +9,42 @@ import (
 )
 
 func main() {
-	printInPorts()
-	printOutPorts()
-	fmt.Println(" \n--Messages--")
-	in, out := openMIDIIn(0), openMIDIOut(0)
-	rd := mid.NewReader()
 
-	go func() {
-		rd.ListenTo(rtmidiadapter.In(in))
-	}()
+	{ // find the ports
+		printInPorts()
+		printOutPorts()
+		fmt.Println(" \n--Messages--")
+	}
 
-	wr := mid.SpeakTo(rtmidiadapter.Out(out))
+	var ( // wire it up
+		midiIn, midiOut = openMIDIIn(0), openMIDIOut(0)
+		in, out         = rtmidiadapter.In(midiIn), rtmidiadapter.Out(midiOut)
+		rd              = mid.NewReader()
+		wr              = mid.SpeakTo(out)
+	)
 
-	wr.NoteOn(60, 100)
-	time.Sleep(time.Nanosecond)
-	wr.NoteOff(60)
-	time.Sleep(time.Nanosecond)
-	wr.SetChannel(1)
-	wr.NoteOn(70, 100)
-	time.Sleep(time.Nanosecond)
-	wr.NoteOff(70)
-	time.Sleep(time.Second * 1)
+	// listen for MIDI
+	go rd.ListenTo(in)
+
+	{ // write MIDI
+		wr.NoteOn(60, 100)
+		time.Sleep(time.Nanosecond)
+		wr.NoteOff(60)
+		time.Sleep(time.Nanosecond)
+
+		wr.SetChannel(1)
+
+		wr.NoteOn(70, 100)
+		time.Sleep(time.Nanosecond)
+		wr.NoteOff(70)
+		time.Sleep(time.Second * 1)
+	}
+
+	{ // clean up
+		in.StopListening()
+		midiIn.Destroy()
+		midiOut.Destroy()
+	}
 }
 
 func openMIDIIn(port int) rtmidi.MIDIIn {
