@@ -1,6 +1,9 @@
 package mid
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/gomidi/midi/midireader"
+)
 
 // ReaderOption configures the reader
 type ReaderOption func(*Reader)
@@ -9,6 +12,12 @@ type ReaderOption func(*Reader)
 func SetLogger(l Logger) ReaderOption {
 	return func(r *Reader) {
 		r.logger = l
+	}
+}
+
+func ReadingOptions(options ...midireader.Option) ReaderOption {
+	return func(r *Reader) {
+		r.midiReaderOptions = append(r.midiReaderOptions, options...)
 	}
 }
 

@@ -2,6 +2,7 @@ package mid
 
 import (
 	"github.com/gomidi/midi"
+	"github.com/gomidi/midi/midireader"
 	"github.com/gomidi/midi/smf"
 )
 
@@ -25,11 +26,13 @@ import (
 // System common and realtime message callbacks will only be called when reading "live" MIDI,
 // so they get no SMFPosition.
 type Reader struct {
-	tempoChanges []tempoChange // track tempo changes
-	header       smf.Header    // store the SMF header
-	logger       Logger        // optional logger
-	pos          *SMFPosition  // the current SMFPosition
-	errSMF       error         // error when reading SMF
+	tempoChanges      []tempoChange       // track tempo changes
+	header            smf.Header          // store the SMF header
+	logger            Logger              // optional logger
+	pos               *SMFPosition        // the current SMFPosition
+	errSMF            error               // error when reading SMF
+	midiReaderOptions []midireader.Option // options for the midireader
+	liveReader        midi.Reader
 
 	// SMFHeader is the callback that gets SMF header data
 	SMFHeader func(smf.Header)

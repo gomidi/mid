@@ -17,10 +17,12 @@ import (
 // They must be attached before Reader.Read is called
 // and they must not be unset or replaced until Read returns.
 // For more infomation about dealing with the MIDI messages, see Reader.
-func (r *Reader) Read(src io.Reader, options ...midireader.Option) (err error) {
+func (r *Reader) Read(src io.Reader) (err error) {
 	r.pos = nil
-	rd := midireader.New(src, r.dispatchRealTime, options...)
-	return r.dispatch(rd)
+	if r.liveReader == nil {
+		r.liveReader = midireader.New(src, r.dispatchRealTime, r.midiReaderOptions...)
+	}
+	return r.dispatch(r.liveReader)
 }
 
 func (r *Reader) dispatchRealTime(m realtime.Message) {
