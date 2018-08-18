@@ -51,9 +51,9 @@ func main() {
     for {
         if rd.Read(piperd) == io.EOF {
             break
+            piperd.Close() // finishes the reading
         }
     }
-    piperd.Close() // finishes the reading
 
     // Output:
     // channel.NoteOn{channel:0xb, key:0x78, velocity:0x32}
