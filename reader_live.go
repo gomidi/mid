@@ -18,58 +18,74 @@ import (
 // and they must not be unset or replaced until Read returns.
 func (r *Reader) Read(src io.Reader, options ...midireader.Option) (err error) {
 	r.pos = nil
-	rtreader := func(m realtime.Message) {
-		switch m {
-		// ticks (most important, must be sent every 10 milliseconds) comes first
-		case realtime.Tick:
-			if r.Message.Realtime.Tick != nil {
-				r.Message.Realtime.Tick()
-			}
+	rd := midireader.New(src, r.dispatchRealTime, options...)
+	return r.dispatch(rd)
+}
 
-		// clock a bit slower synchronization method (24 MIDI Clocks in every quarter note) comes next
-		case realtime.TimingClock:
-			if r.Message.Realtime.Clock != nil {
-				r.Message.Realtime.Clock()
-			}
+func (r *Reader) dispatchRealTime(m realtime.Message) {
 
-		// ok starting and continuing should not take too lpng
-		case realtime.Start:
-			if r.Message.Realtime.Start != nil {
-				r.Message.Realtime.Start()
-			}
-
-		case realtime.Continue:
-			if r.Message.Realtime.Continue != nil {
-				r.Message.Realtime.Continue()
-			}
-
-		// Active Sense must come every 300 milliseconds (but is seldom implemented)
-		case realtime.ActiveSensing:
-			if r.Message.Realtime.ActiveSense != nil {
-				r.Message.Realtime.ActiveSense()
-			}
-
-		// put any user defined realtime message here
-		case realtime.Undefined4:
-			if r.Message.Unknown != nil {
-				r.Message.Unknown(r.pos, m)
-			}
-
-		// ok, stopping is not so urgent
-		case realtime.Stop:
-			if r.Message.Realtime.Stop != nil {
-				r.Message.Realtime.Stop()
-			}
-
-		// reset may take some time
-		case realtime.Reset:
-			if r.Message.Realtime.Reset != nil {
-				r.Message.Realtime.Reset()
-			}
-
+	// ticks (most important, must be sent every 10 milliseconds) comes first
+	if m == realtime.Tick {
+		if r.Message.Realtime.Tick != nil {
+			r.Message.Realtime.Tick()
 		}
+		return
 	}
 
-	rd := midireader.New(src, rtreader, options...)
-	return r.read(rd)
+	// clock a bit slower synchronization method (24 MIDI Clocks in every quarter note) comes next
+	if m == realtime.TimingClock {
+		if r.Message.Realtime.Clock != nil {
+			r.Message.Realtime.Clock()
+		}
+		return
+	}
+
+	// starting should not take too long
+	if m == realtime.Start {
+		if r.Message.Realtime.Start != nil {
+			r.Message.Realtime.Start()
+		}
+		return
+	}
+
+	// continuing should not take too long
+	if m == realtime.Continue {
+		if r.Message.Realtime.Continue != nil {
+			r.Message.Realtime.Continue()
+		}
+		return
+	}
+
+	// Active Sense must come every 300 milliseconds
+	// (but is seldom implemented)
+	if m == realtime.ActiveSensing {
+		if r.Message.Realtime.ActiveSense != nil {
+			r.Message.Realtime.ActiveSense()
+		}
+		return
+	}
+
+	// put any user defined realtime message here
+	if m == realtime.Undefined4 {
+		if r.Message.Unknown != nil {
+			r.Message.Unknown(r.pos, m)
+		}
+		return
+	}
+
+	// stopping is not so urgent
+	if m == realtime.Stop {
+		if r.Message.Realtime.Stop != nil {
+			r.Message.Realtime.Stop()
+		}
+		return
+	}
+
+	// reset may take some time anyway
+	if m == realtime.Reset {
+		if r.Message.Realtime.Reset != nil {
+			r.Message.Realtime.Reset()
+		}
+		return
+	}
 }

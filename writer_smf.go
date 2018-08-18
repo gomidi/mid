@@ -25,6 +25,61 @@ type SMFWriter struct {
 	dest           io.Writer
 }
 
+// NewSMFWriter returns a new SMFWriter that writes to dest.
+// It panics if numtracks is == 0.
+func NewSMFWriter(dest io.Writer, numtracks uint16, options ...smfwriter.Option) *SMFWriter {
+	if numtracks == 0 {
+		panic("numtracks must be > 0")
+	}
+
+	options = append(
+		[]smfwriter.Option{
+			smfwriter.NumTracks(numtracks),
+			smfwriter.TimeFormat(smf.MetricTicks(0)),
+		}, options...)
+
+	wr := smfwriter.New(dest, options...)
+	return &SMFWriter{
+		dest:       dest,
+		wr:         wr,
+		midiWriter: &midiWriter{wr: wr, ch: channel.Channel0},
+	}
+}
+
+// NewSMFFile creates a new SMF file and allows writer to write to it.
+// The file is guaranteed to be closed when returning.
+// The last track is closed automatically, if needed.
+// It panics if numtracks is == 0.
+func NewSMFFile(file string, numtracks uint16, writer func(*SMFWriter) error, options ...smfwriter.Option) error {
+	if numtracks == 0 {
+		panic("numtracks must be > 0")
+	}
+
+	f, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	wr := NewSMFWriter(f, numtracks, options...)
+	if writer != nil {
+		err = writer(wr)
+		if err != nil {
+			return err
+		}
+	}
+
+	if no := wr.wr.Header().NumTracks; wr.finishedTracks < no {
+		err := wr.EndOfTrack()
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
+}
+
 // SetDelta sets the delta ticks to the next message
 func (w *SMFWriter) SetDelta(deltatime uint32) {
 	w.wr.SetDelta(deltatime)
@@ -151,59 +206,4 @@ func (w *SMFWriter) TimeSignature(numerator, denominator, clocksPerClick, demiSe
 // Track writes the track name aka instrument name meta message
 func (w *SMFWriter) Track(track string) error {
 	return w.wr.Write(meta.Track(track))
-}
-
-// NewSMFWriter returns a new SMFWriter that writes to dest.
-// It panics if numtracks is == 0.
-func NewSMFWriter(dest io.Writer, numtracks uint16, options ...smfwriter.Option) *SMFWriter {
-	if numtracks == 0 {
-		panic("numtracks must be > 0")
-	}
-
-	options = append(
-		[]smfwriter.Option{
-			smfwriter.NumTracks(numtracks),
-			smfwriter.TimeFormat(smf.MetricTicks(0)),
-		}, options...)
-
-	wr := smfwriter.New(dest, options...)
-	return &SMFWriter{
-		dest:       dest,
-		wr:         wr,
-		midiWriter: &midiWriter{wr: wr, ch: channel.Channel0},
-	}
-}
-
-// NewSMFFile creates a new SMF file and allows writer to write to it.
-// The file is guaranteed to be closed when returning.
-// The last track is closed automatically, if needed.
-// It panics if numtracks is == 0.
-func NewSMFFile(file string, numtracks uint16, writer func(*SMFWriter) error, options ...smfwriter.Option) error {
-	if numtracks == 0 {
-		panic("numtracks must be > 0")
-	}
-
-	f, err := os.Create(file)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
-	wr := NewSMFWriter(f, numtracks, options...)
-	if writer != nil {
-		err = writer(wr)
-		if err != nil {
-			return err
-		}
-	}
-
-	if no := wr.wr.Header().NumTracks; wr.finishedTracks < no {
-		err := wr.EndOfTrack()
-		if err != nil {
-			return err
-		}
-	}
-
-	return err
 }

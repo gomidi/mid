@@ -8,6 +8,11 @@ import (
 	"io"
 )
 
+// Writer writes live MIDI data. Its methods must not be called concurrently
+type Writer struct {
+	*midiWriter
+}
+
 // NewWriter creates and new Writer for writing of "live" MIDI data ("over the wire")
 // By default it makes no use of the running status.
 func NewWriter(dest io.Writer, options ...midiwriter.Option) *Writer {
@@ -18,11 +23,6 @@ func NewWriter(dest io.Writer, options ...midiwriter.Option) *Writer {
 
 	wr := midiwriter.New(dest, options...)
 	return &Writer{&midiWriter{wr: wr, ch: channel.Channel0}}
-}
-
-// Writer writes live MIDI data. Its methods must not be called concurrently
-type Writer struct {
-	*midiWriter
 }
 
 // ActiveSensing writes the active sensing realtime message

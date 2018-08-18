@@ -55,7 +55,7 @@ func (r *Reader) readSMF(rd smf.Reader) {
 		r.SMFHeader(r.header)
 	}
 
-	err := r.read(rd)
+	err := r.dispatch(rd)
 	if err != io.EOF {
 		r.errSMF = err
 	}
