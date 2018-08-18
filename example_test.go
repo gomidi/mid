@@ -12,13 +12,13 @@ import (
 // makeSMF makes a SMF
 func makeSMF() io.Reader {
 	var bf bytes.Buffer
-	wr := NewSMF(&bf, 1)
-	wr.Tempo(160)
-	wr.SetChannel(2)
-	wr.NoteOn(65, 90)
-	wr.SetDelta(4000)
-	wr.NoteOff(65)
-	wr.EndOfTrack()
+	wr := NewSMF(&bf, 1 /* number of tracks */)
+	wr.Tempo(160 /* beats per minute */)
+	wr.SetChannel(2 /* valid: 0-15 */)
+	wr.NoteOn(65 /* key */, 90 /* velocity */)
+	wr.SetDelta(4000 /* ticks */)
+	wr.NoteOff(65 /* key */)
+	wr.EndOfTrack() // required at the end of a track
 	return bytes.NewReader(bf.Bytes())
 }
 
