@@ -9,14 +9,15 @@ import (
 // data (via Read) or SMF MIDI data (via ReadSMF or ReadSMFFile).
 //
 // Before any of the Read* methods are called, callbacks for the MIDI messages of interest
-// need to be attached to the Reader. This callbacks are then invoked when the corresponding
+// need to be attached to the Reader. These callbacks are then invoked when the corresponding
 // MIDI message arrives. They must not be changed while any of the Read* methods is running.
 //
 // It is possible to share the same Reader for reading of the wire MIDI ("live")
-// and SMF Midi data. However, only channel messages and system exclusive message
-// may be used in both cases. To enable this, the corresponding callbacks
-// get a pointer to the SMFPosition of the MIDI message. This pointer is always nil
-// for "live" MIDI data and never nil when reading from a SMF.
+// and SMF Midi data as long as not more than one Read* method is running at a point in time.
+// However, only channel messages and system exclusive message may be used in both cases.
+// To enable this, the corresponding callbacks receive a pointer to the SMFPosition of the
+// MIDI message. This pointer is always nil for "live" MIDI data and never nil when
+// reading from a SMF.
 //
 // The SMF header callback and the meta message callbacks are only called, when reading data
 // from an SMF. Therefore the SMFPosition is passed directly and can't be nil.
@@ -36,7 +37,7 @@ type Reader struct {
 	// Message provides callbacks for MIDI messages
 	Message struct {
 
-		// Each is called for every MIDI message in addition to the other callback.
+		// Each is called for every MIDI message in addition to the other callbacks.
 		Each func(*SMFPosition, midi.Message)
 
 		// Unknown is called for undefined or unknown messages
@@ -193,4 +194,15 @@ type Reader struct {
 			Escape func(p *SMFPosition, data []byte)
 		}
 	}
+}
+
+// NewReader returns a new Reader
+func NewReader(opts ...ReaderOption) *Reader {
+	h := &Reader{logger: logfunc(printf)}
+
+	for _, opt := range opts {
+		opt(h)
+	}
+
+	return h
 }

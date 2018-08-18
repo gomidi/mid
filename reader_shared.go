@@ -11,17 +11,6 @@ import (
 	"github.com/gomidi/midi/smf"
 )
 
-// NewReader returns a new reader
-func NewReader(opts ...ReaderOption) *Reader {
-	h := &Reader{logger: logfunc(printf)}
-
-	for _, opt := range opts {
-		opt(h)
-	}
-
-	return h
-}
-
 func (r *Reader) saveTempoChange(pos SMFPosition, bpm uint32) {
 	r.tempoChanges = append(r.tempoChanges, tempoChange{pos.AbsoluteTicks, bpm})
 }
