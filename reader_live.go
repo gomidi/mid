@@ -19,10 +19,14 @@ import (
 // For more infomation about dealing with the MIDI messages, see Reader.
 func (r *Reader) Read(src io.Reader) (err error) {
 	r.pos = nil
-	if r.liveReader == nil {
-		r.liveReader = midireader.New(src, r.dispatchRealTime, r.midiReaderOptions...)
-	}
-	return r.dispatch(r.liveReader)
+	/*
+		if r.liveReader == nil {
+			r.liveReader = midireader.New(src, r.dispatchRealTime, r.midiReaderOptions...)
+		}
+	*/
+	rd := midireader.New(src, r.dispatchRealTime, r.midiReaderOptions...)
+	//return r.dispatch(r.liveReader)
+	return r.dispatch(rd)
 }
 
 func (r *Reader) dispatchRealTime(m realtime.Message) {
