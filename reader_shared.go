@@ -44,9 +44,9 @@ func (r *Reader) TimeAt(absTicks uint64) *time.Duration {
 // log does the logging
 func (r *Reader) log(m midi.Message) {
 	if r.pos != nil {
-		r.logger.Printf("#%v [%v d:%v] %#v\n", r.pos.Track, r.pos.AbsoluteTicks, r.pos.DeltaTicks, m)
+		r.logger.Printf("#%v [%v d:%v] %s\n", r.pos.Track, r.pos.AbsoluteTicks, r.pos.DeltaTicks, m)
 	} else {
-		r.logger.Printf("%#v\n", m)
+		r.logger.Printf("%s\n", m)
 	}
 }
 
