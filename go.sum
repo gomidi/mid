@@ -1,2 +1,4 @@
 github.com/gomidi/midi v1.1.3 h1:WF36y+nUBeaiSFY3xLGkJsBgLtKV2w58d/g+X/AGQtQ=
 github.com/gomidi/midi v1.1.3/go.mod h1:B16DbgtsXSbQK9Q75aVezVL6VGhaK+2CVe/ybwUUCHE=
+github.com/gomidi/midi v1.1.4 h1:v0EJs8opWwBFbGoeLB0kYTnpsjZz0VnvlA5PuYfHAOA=
+github.com/gomidi/midi v1.1.4/go.mod h1:B16DbgtsXSbQK9Q75aVezVL6VGhaK+2CVe/ybwUUCHE=
