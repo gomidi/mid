@@ -58,18 +58,21 @@ func (r *reader) Read() error {
 		b[2] = byte(events[0].Data2)
 	*/
 
-	if len(events) > 0 {
-		fmt.Println(len(events))
-	}
+	/*
+		if len(events) > 0 {
+			fmt.Println(len(events))
+		}
+	*/
 	for _, ev := range events {
 		var b = make([]byte, 3)
 		b[0] = byte(ev.Status)
 		b[1] = byte(ev.Data1)
 		b[2] = byte(ev.Data2)
 
-		err = r.rd.Read(bytes.NewReader(b))
+		//err = r.rd.Read(bytes.NewReader(b))
+		r.rd.Read(bytes.NewReader(b))
 		// if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		// return err
 		// }
 	}
@@ -100,11 +103,8 @@ func main() {
 	r := mid.NewReader()
 	rdFunc := newReader(r, in)
 
-	done := make(chan bool)
 	go func() {
 		rdFunc()
-		done <- true
-		return
 	}()
 
 	wr := mid.NewWriter(newWriter(out))
@@ -115,9 +115,10 @@ func main() {
 	wr.NoteOff(60)
 	time.Sleep(time.Nanosecond)
 	wr.NoteOff(65)
-	time.Sleep(time.Second)
 	fmt.Println("all written")
-	<-done
+	time.Sleep(time.Second)
+	// <-done
+	// in.Close()
 	out.Close()
 	//	out.WriteShort(0x90, 60, 100)
 
