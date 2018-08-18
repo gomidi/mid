@@ -80,8 +80,7 @@ func Example() {
 	rd := NewReader(NoLogger() /* disable default logging*/)
 
 	var ex example
-	ex.bpm = 120          // default according to SMF spec
-	ex.start = time.Now() // needed for the live timing
+	ex.bpm = 120 // default according to SMF spec
 
 	// setup the callbacks
 	rd.SMFHeader = ex.SMFHeader

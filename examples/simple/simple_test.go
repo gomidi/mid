@@ -38,10 +38,10 @@ func Example() {
 
 	for {
 		if rd.Read(piperd) == io.EOF {
+			piperd.Close() // finishes the reading
 			break
 		}
 	}
-	piperd.Close() // finishes the reading
 
 	// Output: channel.NoteOn{channel:0xb, key:0x78, velocity:0x32}
 	// NoteOn (ch 11: key 120 vel: 50)

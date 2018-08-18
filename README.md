@@ -50,8 +50,8 @@ func main() {
 
     for {
         if rd.Read(piperd) == io.EOF {
-            break
             piperd.Close() // finishes the reading
+            break
         }
     }
 

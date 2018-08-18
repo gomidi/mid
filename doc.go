@@ -4,7 +4,7 @@
 
 /*
 Package mid provides an easy abstraction for reading and writing of MIDI data live or from SMF files.
-For examples see the examples folder.
+For a simple example see the examples/simple/simple_test.
 
 */
 package mid
