@@ -5,6 +5,8 @@
 /*
 Package mid provides an easy abstraction for reading and writing of MIDI data live or from SMF files.
 
+For examples look into the examples folder
+
 It provides a common handler for live reading and SMF reading, so that code can be shared in both use cases.
 The user attaches callback functions to the handler and they get invoked as the MIDI data is read.
 

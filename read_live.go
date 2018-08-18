@@ -72,11 +72,5 @@ func (h *Reader) ReadLive(src io.Reader, options ...midireader.Option) (err erro
 	}
 
 	rd := midireader.New(src, rthandler, options...)
-	err = h.read(rd)
-
-	if err == io.EOF {
-		return nil
-	}
-
-	return
+	return h.read(rd)
 }
