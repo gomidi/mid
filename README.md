@@ -66,7 +66,7 @@ func main() {
 
 ## Status
 
-API unstable, functionality solid
+API mostly stable and complete
 
 - Go version: >= 1.5
 - OS/architectures: everywhere Go runs (tested on Linux and Windows).
