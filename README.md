@@ -65,17 +65,8 @@ func main() {
 
 ## Adapters
 
-To connect with the outside MIDI world, there are two adapter packages
-
-```
-// connect via github.com/rakyll/portmidi
-github.com/gomidi/mid/adapters/portmidiadapter
-
-// connect via github.com/thestk/rtmidi/contrib/go/rtmidi
-github.com/gomidi/mid/adapters/rtmidiadapter
-```
-
-In each adapter package is a verbose example.
+To connect with the outside MIDI world, there are two adapter packages for
+`rtmidi` and `portmidi` inside https://github.com/gomidi/connect.
 
 ## Status
 
