@@ -71,7 +71,7 @@ func (e *example) calcDuration(p *mid.SMFPosition) (dur time.Duration) {
 	// to make it easy, we ignore the possibility that tempo information may be in another track
 	// that is read after this track (the SMF spec recommends to write tempo changes to the first track)
 	// however, since makeSMF just creates one track, we are safe
-	return roundSec(e.ticks.Duration(e.bpm, uint32(p.AbsTime)))
+	return roundSec(e.ticks.Duration(e.bpm, uint32(p.AbsoluteTicks)))
 }
 
 func Example() {

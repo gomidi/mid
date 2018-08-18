@@ -134,7 +134,7 @@ func NewReader(opts ...ReaderOption) *Reader {
 }
 
 func (r *Reader) registerTempoChange(pos SMFPosition, bpm uint32) {
-	r.tempoChanges = append(r.tempoChanges, tempoChange{pos.AbsTime, bpm})
+	r.tempoChanges = append(r.tempoChanges, tempoChange{pos.AbsoluteTicks, bpm})
 }
 
 // TimeAt returns the time.Duration at the given absolute position counted
@@ -166,7 +166,7 @@ func (r *Reader) TimeAt(absTicks uint64) *time.Duration {
 // log does the logging
 func (r *Reader) log(m midi.Message) {
 	if r.pos != nil {
-		r.logger.Printf("#%v [%v d:%v] %#v\n", r.pos.Track, r.pos.AbsTime, r.pos.Delta, m)
+		r.logger.Printf("#%v [%v d:%v] %#v\n", r.pos.Track, r.pos.AbsoluteTicks, r.pos.DeltaTicks, m)
 	} else {
 		r.logger.Printf("%#v\n", m)
 	}
@@ -184,8 +184,8 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 		}
 
 		if frd, ok := rd.(smf.Reader); ok && r.pos != nil {
-			r.pos.Delta = frd.Delta()
-			r.pos.AbsTime += uint64(r.pos.Delta)
+			r.pos.DeltaTicks = frd.Delta()
+			r.pos.AbsoluteTicks += uint64(r.pos.DeltaTicks)
 			r.pos.Track = frd.Track()
 		}
 
@@ -386,8 +386,8 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 				}
 			case meta.EndOfTrack:
 				if _, ok := rd.(smf.Reader); ok && r.pos != nil {
-					r.pos.Delta = 0
-					r.pos.AbsTime = 0
+					r.pos.DeltaTicks = 0
+					r.pos.AbsoluteTicks = 0
 				}
 				if r.Message.Meta.EndOfTrack != nil {
 					r.Message.Meta.EndOfTrack(*r.pos)
@@ -407,16 +407,56 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 	return
 }
 
+/*
+These are differences  some differences between the two:
+  - SMF events have a message and a delta time while live MIDI just has messages
+  - a SMF file has a header
+  - a SMF file may have meta messages (e.g. track name, copyright etc) while live MIDI must not have them
+  - live MIDI may have realtime and syscommon messages while a SMF must not have them
+
+In sum the only MIDI message handling that could be shared in practice is the handling of channel
+and sysex messages.
+
+That is reflected in the type signature of the callbacks and results in three kinds of callbacks:
+  - The ones that don't receive a SMFPosition are called for messages that may only appear live
+  - The ones with that receive a SMFPosition are called for messages that may only appear
+    within a SMF file
+  - The onse with that receive a *SMFPosition are called for messages that may appear live
+    and within a SMF file. In a SMF file the pointer is never nil while in a live situation it always is.
+
+Due to the nature of a SMF file, the tracks have no "assigned numbers", and can in the worst case just be
+distinguished by the order in which they appear inside the file.
+
+In addition the delta times are just relative to the previous message inside the track.
+
+This has some severe consequences:
+
+  - Eeven if the user is just interested in some kind of messages (e.g. note on and note off),
+    he still has to deal with the delta times of every message.
+  - At the beginning of each track he has to reset the tracking time.
+
+This procedure is error prone and therefor SMFPosition provides a helper that contains not just
+the original delta (which shouldn't be needed most of the time), but also the absolute position (in ticks)
+and order number of the track in which the message appeared.
+
+This way the user can ignore the messages and tracks he is not interested in.
+
+See the example for a handler that handles both live and SMF messages.
+
+For writing there is a LiveWriter for "over the wire" writing and a SMFWriter to write SMF files.
+
+*/
+
 // SMFPosition is the position of the event inside a standard midi file (SMF).
 type SMFPosition struct {
 	// the Track number
 	Track int16
 
-	// the delta time to the previous message in the same track
-	Delta uint32
+	// DeltaTicks is number of ticks that passed since the previous message in the same track
+	DeltaTicks uint32
 
-	// the absolute time from the beginning of the track
-	AbsTime uint64
+	// AbsoluteTicks is the number of ticks that passed since the beginning of the track
+	AbsoluteTicks uint64
 }
 
 type tempoChange struct {
