@@ -14,14 +14,14 @@ import (
 //
 // They must be attached before Handler.ReadSMF is called
 // and they must not be unset or replaced until ReadSMF returns.
-func (h *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
-	h.errSMF = nil
-	h.pos = &SMFPosition{}
-	err := smfreader.ReadFile(file, h.readSMF, options...)
+func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
+	r.errSMF = nil
+	r.pos = &SMFPosition{}
+	err := smfreader.ReadFile(file, r.readSMF, options...)
 	if err != nil {
 		return err
 	}
-	return h.errSMF
+	return r.errSMF
 }
 
 // ReadSMF reads midi messages from src (which is supposed to be the content of a standard midi file (SMF))
@@ -31,34 +31,32 @@ func (h *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 //
 // If the read content was a valid midi file, nil is returned.
 //
-// The messages are dispatched to the corresponding attached functions of the handler.
+// The messages are dispatched to the corresponding attached functions of the Reader.
 //
-// They must be attached before Handler.ReadSMF is called
+// They must be attached before Reader.ReadSMF is called
 // and they must not be unset or replaced until ReadSMF returns.
-func (h *Reader) ReadSMF(src io.Reader, options ...smfreader.Option) error {
-	h.errSMF = nil
-	h.pos = &SMFPosition{}
+func (r *Reader) ReadSMF(src io.Reader, options ...smfreader.Option) error {
+	r.errSMF = nil
+	r.pos = &SMFPosition{}
 	rd := smfreader.New(src, options...)
 
 	err := rd.ReadHeader()
 	if err != nil {
 		return err
 	}
-	h.readSMF(rd)
-	return h.errSMF
+	r.readSMF(rd)
+	return r.errSMF
 }
 
-func (h *Reader) readSMF(rd smf.Reader) {
-	h.header = rd.Header()
+func (r *Reader) readSMF(rd smf.Reader) {
+	r.header = rd.Header()
 
-	if h.SMFHeader != nil {
-		h.SMFHeader(h.header)
+	if r.SMFHeader != nil {
+		r.SMFHeader(r.header)
 	}
 
-	// use err here
-	err := h.read(rd)
+	err := r.read(rd)
 	if err != io.EOF {
-		h.errSMF = err
+		r.errSMF = err
 	}
-
 }

@@ -25,7 +25,7 @@ func TestMsbLsb(t *testing.T) {
 
 		var bf bytes.Buffer
 
-		wr := NewLiveWriter(&bf)
+		wr := NewWriter(&bf)
 
 		wr.MsbLsb(test.msb, test.lsb, test.value)
 

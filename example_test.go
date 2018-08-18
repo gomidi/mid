@@ -100,7 +100,7 @@ func Example() {
 	piperd, pipewr := io.Pipe()
 
 	go func() {
-		wr := NewLiveWriter(pipewr)
+		wr := NewWriter(pipewr)
 
 		// reset the time
 		ex.start = time.Now()

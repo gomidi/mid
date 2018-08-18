@@ -40,7 +40,7 @@ func main() {
     piperd, pipewr := io.Pipe()
 
     go func() {
-        wr := mid.NewLiveWriter(pipewr)
+        wr := mid.NewWriter(pipewr)
         wr.SetChannel(11) // sets the channel for the next messages
         wr.NoteOn(120, 50)
         time.Sleep(time.Second) // let the note ring for 1 sec
