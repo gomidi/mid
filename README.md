@@ -65,7 +65,7 @@ func main() {
 
 ## Adapters
 
-To connect with the outside MIDI world, there are two adapter packages for
+To connect it with the outside MIDI world (the MIDI ports of your computer), there are two adapter packages for
 `rtmidi` and `portmidi` inside https://github.com/gomidi/connect.
 
 ## Status
