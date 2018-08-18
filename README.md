@@ -49,7 +49,7 @@ func main() {
     }()
 
     for {
-        if rd.ReadLive(piperd) == io.EOF {
+        if rd.Read(piperd) == io.EOF {
             break
         }
     }

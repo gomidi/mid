@@ -115,7 +115,7 @@ func Example() {
 	}()
 
 	for {
-		if rd.ReadLive(piperd) == io.EOF {
+		if rd.Read(piperd) == io.EOF {
 			piperd.Close() // we're done reading
 			break
 		}

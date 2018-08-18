@@ -7,17 +7,16 @@ import (
 	"github.com/gomidi/midi/midireader"
 )
 
-// ReadLive reads midi messages from src until an error or io.EOF happens.
+// Read reads midi messages from src until an error happens (for "live" MIDI data "over the wire").
+// io.EOF is the expected error that is returned when reading should stop.
 //
-// If io.EOF happened the returned error is nil.
-//
-// ReadLive does not close the src.
+// Read does not close the src.
 //
 // The messages are dispatched to the corresponding attached functions of the handler.
 //
-// They must be attached before Handler.ReadLive is called
-// and they must not be unset or replaced until ReadLive returns.
-func (h *Reader) ReadLive(src io.Reader, options ...midireader.Option) (err error) {
+// They must be attached before Reader.Read is called
+// and they must not be unset or replaced until Read returns.
+func (h *Reader) Read(src io.Reader, options ...midireader.Option) (err error) {
 	h.pos = nil
 	rthandler := func(m realtime.Message) {
 		switch m {
