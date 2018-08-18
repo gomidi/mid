@@ -90,7 +90,7 @@ func (w *midiWriter) ControlChangeOn(controller uint8) error {
 	return w.ControlChange(controller, 127)
 }
 
-// SysEx writes sysex data
-func (w *midiWriter) SysEx(data []byte) error {
+// SystemExclusive writes system exclusive data
+func (w *midiWriter) SystemExclusive(data []byte) error {
 	return w.wr.Write(sysex.SysEx(data))
 }

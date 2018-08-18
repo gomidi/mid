@@ -97,7 +97,7 @@ type Reader struct {
 		}
 
 		// system common messages: just in live data
-		SysCommon struct {
+		SystemCommon struct {
 			TuneRequest         func()
 			SongSelect          func(num uint8)
 			SongPositionPointer func(pos uint16)
@@ -106,7 +106,7 @@ type Reader struct {
 
 		// system exclusive, may be in SMF files and in live data
 		// for live data *SMFPosition is nil
-		SysEx struct {
+		SystemExcluse struct {
 			Complete func(p *SMFPosition, data []byte)
 			Start    func(p *SMFPosition, data []byte)
 			Continue func(p *SMFPosition, data []byte)
@@ -286,28 +286,28 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 			}
 
 		case sysex.SysEx:
-			if r.Message.SysEx.Complete != nil {
-				r.Message.SysEx.Complete(r.pos, msg.Data())
+			if r.Message.SystemExcluse.Complete != nil {
+				r.Message.SystemExcluse.Complete(r.pos, msg.Data())
 			}
 
 		case sysex.Start:
-			if r.Message.SysEx.Start != nil {
-				r.Message.SysEx.Start(r.pos, msg.Data())
+			if r.Message.SystemExcluse.Start != nil {
+				r.Message.SystemExcluse.Start(r.pos, msg.Data())
 			}
 
 		case sysex.End:
-			if r.Message.SysEx.End != nil {
-				r.Message.SysEx.End(r.pos, msg.Data())
+			if r.Message.SystemExcluse.End != nil {
+				r.Message.SystemExcluse.End(r.pos, msg.Data())
 			}
 
 		case sysex.Continue:
-			if r.Message.SysEx.Continue != nil {
-				r.Message.SysEx.Continue(r.pos, msg.Data())
+			if r.Message.SystemExcluse.Continue != nil {
+				r.Message.SystemExcluse.Continue(r.pos, msg.Data())
 			}
 
 		case sysex.Escape:
-			if r.Message.SysEx.Escape != nil {
-				r.Message.SysEx.Escape(r.pos, msg.Data())
+			if r.Message.SystemExcluse.Escape != nil {
+				r.Message.SystemExcluse.Escape(r.pos, msg.Data())
 			}
 
 		// this usually takes some time
@@ -348,18 +348,18 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 			}
 
 		case syscommon.SongSelect:
-			if r.Message.SysCommon.SongSelect != nil {
-				r.Message.SysCommon.SongSelect(msg.Number())
+			if r.Message.SystemCommon.SongSelect != nil {
+				r.Message.SystemCommon.SongSelect(msg.Number())
 			}
 
 		case syscommon.SongPositionPointer:
-			if r.Message.SysCommon.SongPositionPointer != nil {
-				r.Message.SysCommon.SongPositionPointer(msg.Number())
+			if r.Message.SystemCommon.SongPositionPointer != nil {
+				r.Message.SystemCommon.SongPositionPointer(msg.Number())
 			}
 
 		case syscommon.MIDITimingCode:
-			if r.Message.SysCommon.MIDITimingCode != nil {
-				r.Message.SysCommon.MIDITimingCode(msg.QuarterFrame())
+			if r.Message.SystemCommon.MIDITimingCode != nil {
+				r.Message.SystemCommon.MIDITimingCode(msg.QuarterFrame())
 			}
 
 		case meta.Copyright:
@@ -381,8 +381,8 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 		default:
 			switch m {
 			case syscommon.TuneRequest:
-				if r.Message.SysCommon.TuneRequest != nil {
-					r.Message.SysCommon.TuneRequest()
+				if r.Message.SystemCommon.TuneRequest != nil {
+					r.Message.SystemCommon.TuneRequest()
 				}
 			case meta.EndOfTrack:
 				if _, ok := rd.(smf.Reader); ok && r.pos != nil {
