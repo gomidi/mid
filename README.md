@@ -63,6 +63,19 @@ func main() {
 }
 ```
 
+## Adapters
+
+To connect with the outside MIDI world, there are two adapter packages
+
+```
+// connect via github.com/rakyll/portmidi
+github.com/gomidi/mid/adapters/portmidiadapter
+
+// connect via github.com/thestk/rtmidi/contrib/go/rtmidi
+github.com/gomidi/mid/adapters/rtmidiadapter
+```
+
+In each adapter package is a verbose example.
 
 ## Status
 
@@ -72,6 +85,8 @@ API mostly stable and complete
 - OS/architectures: everywhere Go runs (tested on Linux and Windows).
 
 ## Installation
+
+It is recommended to use Go 1.11 with module support (`$GO111MODULE=on`).
 
 ```
 go get -d github.com/gomidi/mid/...
