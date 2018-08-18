@@ -5,7 +5,7 @@ Based on https://github.com/gomidi/midi.
 
 [![Build Status Travis/Linux](https://travis-ci.org/gomidi/mid.svg?branch=master)](http://travis-ci.org/gomidi/mid) [![Coverage Status](https://coveralls.io/repos/github/gomidi/mid/badge.svg)](https://coveralls.io/github/gomidi/mid) [![Go Report](https://goreportcard.com/badge/github.com/gomidi/mid)](https://goreportcard.com/report/github.com/gomidi/mid) [![Documentation](http://godoc.org/github.com/gomidi/mid?status.png)](http://godoc.org/github.com/gomidi/mid)
 
-## Usage / Example
+## Example
 
 ```go
 package main
