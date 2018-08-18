@@ -37,7 +37,7 @@ func TestTimeAt(t *testing.T) {
 	for _, test := range tests {
 		var bf bytes.Buffer
 
-		wr := NewSMFWriter(&bf, 1, smfwriter.TimeFormat(mt))
+		wr := NewSMF(&bf, 1, smfwriter.TimeFormat(mt))
 		wr.Tempo(test.tempo1)
 		wr.SetDelta(twobars)
 		wr.Tempo(test.tempo2)

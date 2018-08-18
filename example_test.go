@@ -12,7 +12,7 @@ import (
 // makeSMF makes a SMF
 func makeSMF() io.Reader {
 	var bf bytes.Buffer
-	wr := NewSMFWriter(&bf, 1)
+	wr := NewSMF(&bf, 1)
 	wr.Tempo(160)
 	wr.SetChannel(2)
 	wr.NoteOn(65, 90)

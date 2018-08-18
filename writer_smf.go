@@ -25,9 +25,9 @@ type SMFWriter struct {
 	dest           io.Writer
 }
 
-// NewSMFWriter returns a new SMFWriter that writes to dest.
+// NewSMF returns a new SMFWriter that writes to dest.
 // It panics if numtracks is == 0.
-func NewSMFWriter(dest io.Writer, numtracks uint16, options ...smfwriter.Option) *SMFWriter {
+func NewSMF(dest io.Writer, numtracks uint16, options ...smfwriter.Option) *SMFWriter {
 	if numtracks == 0 {
 		panic("numtracks must be > 0")
 	}
@@ -62,7 +62,7 @@ func NewSMFFile(file string, numtracks uint16, writer func(*SMFWriter) error, op
 
 	defer f.Close()
 
-	wr := NewSMFWriter(f, numtracks, options...)
+	wr := NewSMF(f, numtracks, options...)
 	if writer != nil {
 		err = writer(wr)
 		if err != nil {
