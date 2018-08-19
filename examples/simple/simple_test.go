@@ -43,8 +43,8 @@ func Example() {
 		}
 	}
 
-	// Output: channel.NoteOn{channel:0xb, key:0x78, velocity:0x32}
+	// Output: channel.NoteOn channel 11 key 120 velocity 50
 	// NoteOn (ch 11: key 120 vel: 50)
-	// channel.NoteOff{channel:0xb, key:0x78}
+	// channel.NoteOff channel 11 key 120
 	// NoteOff (ch 11: key 120)
 }
