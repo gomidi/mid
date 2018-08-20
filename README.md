@@ -22,7 +22,7 @@ Then MIDI data could be read the following ways:
 - `Reader.ReadFrom` reads "live" MIDI from an `InConnection`, aka MIDI in port
 - `Reader.Read` reads "live" MIDI from an `io.Reader`.
 - `Reader.ReadSMF` reads SMF MIDI from an `io.Reader`.
-- `ReadSMFFile` reads a complete SMF file.
+- `Reader.ReadSMFFile` reads a complete SMF file.
 
 For a simple example with "live" MIDI and `io.Reader` and `io.Writer` see the example below.
 
