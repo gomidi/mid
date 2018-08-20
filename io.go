@@ -66,8 +66,13 @@ func (r *inReader) handleMessage(b []byte, deltaMicroseconds int64) {
 
 // Ticks returns the ticks that correspond to a duration while respecting the current tempo
 func (r *Reader) Ticks(d time.Duration) uint32 {
+	return r.resolution.Ticks(r.Tempo(), d)
+}
+
+// Tempo returns the current tempo in BPM (beats per minute)
+func (r *Reader) Tempo() uint32 {
 	tempochange := r.tempoChanges[len(r.tempoChanges)-1]
-	return r.resolution.Ticks(tempochange.bpm, d)
+	return tempochange.bpm
 }
 
 // ListenTo configures the Reader to listen to the given MIDI in port.
