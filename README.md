@@ -7,34 +7,32 @@ Based on https://github.com/gomidi/midi.
 
 ## Description
 
-Package mid provides an easy abstraction for reading and writing of MIDI and SMF (Standard MIDI File) data.
+Package mid provides an easy abstraction for reading and writing of "live" `MIDI` and `SMF` (Standard MIDI File) data.
 
-MIDI data could be written the following ways:
+`MIDI` data could be written the following ways:
 
-- WriteTo writes "live" MIDI to an OutConnection, aka MIDI out port (have a look at gomidi/connect for adapters)
-- NewWriter is used to write "live" MIDI to an io.Writer.
-- NewSMF is used to write SMF MIDI to an io.Writer.
-- NewSMFFile is used to write a complete SMF file.
+- `WriteTo` writes "live" MIDI to an `OutConnection`, aka MIDI out port
+- `NewWriter` is used to write "live" MIDI to an `io.Writer`.
+- `NewSMF` is used to write SMF MIDI to an `io.Writer`.
+- `NewSMFFile` is used to write a complete SMF file.
 
-To read, create a Reader and attach callbacks to it.
+To read, create a `Reader` and attach callbacks to it.
 Then MIDI data could be read the following ways:
 
-- Reader.ReadFrom reads "live" MIDI from an InConnection, aka MIDI in port (have a look at gomidi/connect for adapters)
-- Reader.Read reads "live" MIDI from an io.Reader.
-- Reader.ReadSMF reads SMF MIDI from an io.Reader.
-- ReadSMFFile reads a complete SMF file.
+- `Reader.ReadFrom` reads "live" MIDI from an `InConnection`, aka MIDI in port
+- `Reader.Read` reads "live" MIDI from an `io.Reader`.
+- `Reader.ReadSMF` reads SMF MIDI from an `io.Reader`.
+- `ReadSMFFile` reads a complete SMF file.
 
-For a simple example with "live" MIDI and io.Reader and io.Writer see the example below.
+For a simple example with "live" MIDI and `io.Reader` and `io.Writer` see the example below.
 
-To connect with the MIDI ports of your computer, use it with
-the adapter packages for rtmidi and portaudio at https://github.com/gomidi/connect.
+To connect with the MIDI ports of your computer (via InConnection and OutConnection), use it with the adapter packages for `rtmidi` and `portaudio` at https://github.com/gomidi/connect.
 
 There you can find a simple example how to do it.
 
 ## Example
 
-We use an io.Writer to write to and io.Reader to read from. They are part of
-the same io.Pipe.
+We use an `io.Writer` to write to and `io.Reader` to read from. They are connected by the same `io.Pipe`.
 
 ```go
 package main
@@ -46,10 +44,12 @@ import (
     "time"
 )
 
+// callback for note on messages
 func noteOn(p *mid.Position, channel, key, vel uint8) {
     fmt.Printf("NoteOn (ch %v: key %v vel: %v)\n", channel, key, vel)
 }
 
+// callback for note off messages
 func noteOff(p *mid.Position, channel, key, vel uint8) {
     fmt.Printf("NoteOff (ch %v: key %v)\n", channel, key)
 }
@@ -94,8 +94,7 @@ func main() {
 
 ## Connections
 
-To connect it with the outside MIDI world (the MIDI ports of your computer), there are two adapter packages for
-`rtmidi` and `portmidi` inside https://github.com/gomidi/connect.
+To connect it with the outside MIDI world (the MIDI ports of your computer), there are adapter packages for `rtmidi` and `portmidi` inside https://github.com/gomidi/connect.
 
 ## Status
 
