@@ -9,25 +9,25 @@ import (
 	"github.com/gomidi/midi/smf"
 )
 
-// In is an interface for external/over the wire MIDI input
+// InConnection is an interface for external/over the wire MIDI input connections.
 // The gomidi/connect package provides adapters to rtmidi and portaudio
-// that fullfill the In interface.
-type In interface {
-	SetListener(func(msg []byte, deltaMicroseconds int64))
+// that fullfill the InConnection interface.
+type InConnection interface {
+	SetListener(func(data []byte, deltaMicroseconds int64))
 	StopListening()
 }
 
-// Out is an interface for external/over the wire MIDI output
+// OutConnection is an interface for external/over the wire MIDI output connections.
 // The gomidi/connect package provides adapters to rtmidi and portaudio
-// that fullfill the Out interface.
-type Out interface {
+// that fullfill the OutConnection interface.
+type OutConnection interface {
 
 	// Send sends the given MIDI bytes over the wire.
 	Send([]byte) error
 }
 
 type outWriter struct {
-	out Out
+	out OutConnection
 }
 
 func (w *outWriter) Write(b []byte) (int, error) {
@@ -37,13 +37,13 @@ func (w *outWriter) Write(b []byte) (int, error) {
 // SpeakTo returns a Writer that outputs to the given MIDI out port.
 // The gomidi/connect package provides adapters to rtmidi and portaudio
 // that fullfill the Out interface.
-func SpeakTo(out Out) *Writer {
+func SpeakTo(out OutConnection) *Writer {
 	return NewWriter(&outWriter{out})
 }
 
 type inReader struct {
 	rd         *Reader
-	in         In
+	in         InConnection
 	midiReader midi.Reader
 	bf         bytes.Buffer
 }
@@ -62,7 +62,7 @@ func (r *inReader) handleMessage(b []byte, deltaMicroseconds int64) {
 // ListenTo configures the Reader to listen to the given MIDI in port.
 // The gomidi/connect package provides adapters to rtmidi and portaudio
 // that fullfill the In interface.
-func (r *Reader) ListenTo(in In) {
+func (r *Reader) ListenTo(in InConnection) {
 	r.resolution = smf.MetricTicks(1920)
 	rd := &inReader{rd: r, in: in}
 	rd.midiReader = midireader.New(&rd.bf, r.dispatchRealTime, r.midiReaderOptions...)
