@@ -41,10 +41,10 @@ func (w *outWriter) Write(b []byte) (int, error) {
 	return len(b), w.out.Send(b)
 }
 
-// SpeakTo returns a Writer that outputs to the given MIDI out port.
+// WriteTo returns a Writer that writes to the given MIDI out connection.
 // The gomidi/connect package provides adapters to rtmidi and portaudio
-// that fullfill the Out interface.
-func SpeakTo(out OutConnection) *Writer {
+// that fullfill the OutConnection interface.
+func WriteTo(out OutConnection) *Writer {
 	return NewWriter(&outWriter{out})
 }
 
@@ -88,10 +88,10 @@ func (r *Reader) Tempo() uint32 {
 	return tempochange.bpm
 }
 
-// ListenTo configures the Reader to listen to the given MIDI in port.
+// ReadFrom configures the Reader to read from to the given MIDI in connection.
 // The gomidi/connect package provides adapters to rtmidi and portaudio
-// that fullfill the In interface.
-func (r *Reader) ListenTo(in InConnection) {
+// that fullfill the InConnection interface.
+func (r *Reader) ReadFrom(in InConnection) {
 	r.resolution = smf.MetricTicks(1920)
 	rd := &inReader{rd: r, in: in}
 	rd.midiReader = midireader.New(&rd.bf, r.dispatchRealTime, r.midiReaderOptions...)
