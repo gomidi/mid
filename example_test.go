@@ -40,24 +40,24 @@ func (e *example) SMFHeader(head smf.Header) {
 }
 
 // Tempo tracks a tempo change
-func (e *example) Tempo(p SMFPosition, bpm uint32) {
+func (e *example) Tempo(p Position, bpm uint32) {
 	e.bpm = bpm
 }
 
 // NoteOn responds to note on messages
-func (e *example) NoteOn(p *SMFPosition, channel, key, vel uint8) {
+func (e *example) NoteOn(p *Position, channel, key, vel uint8) {
 	fmt.Printf("[%vs] NoteOn at channel %v: key %v velocity: %v\n",
 		e.calcDuration(p).Seconds(), channel, key, vel)
 }
 
-func (e *example) NoteOff(p *SMFPosition, channel, key, vel uint8) {
+func (e *example) NoteOff(p *Position, channel, key, vel uint8) {
 	fmt.Printf("[%vs] NoteOff at channel %v: key %v velocity: %v\n",
 		e.calcDuration(p).Seconds(),
 		channel, key, vel)
 }
 
 // a helper to calculate the duration for both live and SMF messages
-func (e *example) calcDuration(p *SMFPosition) (dur time.Duration) {
+func (e *example) calcDuration(p *Position) (dur time.Duration) {
 	// we are in a live setting
 	if p == nil {
 		dur = roundSec(time.Now().Sub(e.start))

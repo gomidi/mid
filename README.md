@@ -17,11 +17,11 @@ import (
     "time"
 )
 
-func noteOn(p *mid.SMFPosition, channel, key, vel uint8) {
+func noteOn(p *mid.Position, channel, key, vel uint8) {
     fmt.Printf("NoteOn (ch %v: key %v vel: %v)\n", channel, key, vel)
 }
 
-func noteOff(p *mid.SMFPosition, channel, key, vel uint8) {
+func noteOff(p *mid.Position, channel, key, vel uint8) {
     fmt.Printf("NoteOff (ch %v: key %v)\n", channel, key)
 }
 
@@ -63,7 +63,7 @@ func main() {
 }
 ```
 
-## Adapters
+## Connections
 
 To connect it with the outside MIDI world (the MIDI ports of your computer), there are two adapter packages for
 `rtmidi` and `portmidi` inside https://github.com/gomidi/connect.

@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-func noteOn(p *mid.SMFPosition, channel, key, vel uint8) {
+func noteOn(p *mid.Position, channel, key, vel uint8) {
 	fmt.Printf("NoteOn (ch %v: key %v vel: %v)\n", channel, key, vel)
 }
 
-func noteOff(p *mid.SMFPosition, channel, key, vel uint8) {
+func noteOff(p *mid.Position, channel, key, vel uint8) {
 	fmt.Printf("NoteOff (ch %v: key %v)\n", channel, key)
 }
 

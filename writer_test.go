@@ -32,7 +32,7 @@ func TestMsbLsb(t *testing.T) {
 		var result []uint8
 
 		rd := NewReader(NoLogger())
-		rd.Message.Channel.ControlChange = func(p *SMFPosition, channel, cc, val uint8) {
+		rd.Message.Channel.ControlChange = func(p *Position, channel, cc, val uint8) {
 			result = append(result, cc, val)
 		}
 		rd.Read(&bf)

@@ -18,7 +18,7 @@ import (
 // SMFPosition.
 func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 	r.errSMF = nil
-	r.pos = &SMFPosition{}
+	r.pos = &Position{}
 	err := smfreader.ReadFile(file, r.readSMF, options...)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 // SMFPosition.
 func (r *Reader) ReadSMF(src io.Reader, options ...smfreader.Option) error {
 	r.errSMF = nil
-	r.pos = &SMFPosition{}
+	r.pos = &Position{}
 	rd := smfreader.New(src, options...)
 
 	err := rd.ReadHeader()
@@ -55,6 +55,10 @@ func (r *Reader) ReadSMF(src io.Reader, options ...smfreader.Option) error {
 func (r *Reader) readSMF(rd smf.Reader) {
 	r.header = rd.Header()
 
+	if metric, isMetric := r.header.TimeFormat.(smf.MetricTicks); isMetric {
+		r.resolution = metric
+	}
+
 	if r.SMFHeader != nil {
 		r.SMFHeader(r.header)
 	}
@@ -63,18 +67,6 @@ func (r *Reader) readSMF(rd smf.Reader) {
 	if err != io.EOF {
 		r.errSMF = err
 	}
-}
-
-// SMFPosition is the position of the event inside a standard midi file (SMF).
-type SMFPosition struct {
-	// Track is the number of the track, starting with 0
-	Track int16
-
-	// DeltaTicks is number of ticks that passed since the previous message in the same track
-	DeltaTicks uint32
-
-	// AbsoluteTicks is the number of ticks that passed since the beginning of the track
-	AbsoluteTicks uint64
 }
 
 /*
