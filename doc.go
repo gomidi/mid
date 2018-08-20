@@ -7,18 +7,18 @@ Package mid provides an easy abstraction for reading and writing of MIDI and SMF
 
 MIDI data could be written the following ways:
 
-- WriteTo writes "live" MIDI to an OutConnection, aka MIDI out port (have a look at gomidi/connect for adapters)
-- NewWriter is used to write "live" MIDI to an io.Writer.
-- NewSMF is used to write SMF MIDI to an io.Writer.
-- NewSMFFile is used to write a complete SMF file.
+	- WriteTo writes "live" MIDI to an OutConnection, aka MIDI out port (have a look at gomidi/connect for adapters)
+	- NewWriter is used to write "live" MIDI to an io.Writer.
+	- NewSMF is used to write SMF MIDI to an io.Writer.
+	- NewSMFFile is used to write a complete SMF file.
 
 To read, create a Reader and attach callbacks to it.
 Then MIDI data could be read the following ways:
 
-- Reader.ReadFrom reads "live" MIDI from an InConnection, aka MIDI in port (have a look at gomidi/connect for adapters)
-- Reader.Read reads "live" MIDI from an io.Reader.
-- Reader.ReadSMF reads SMF MIDI from an io.Reader.
-- ReadSMFFile reads a complete SMF file.
+	- Reader.ReadFrom reads "live" MIDI from an InConnection, aka MIDI in port (have a look at gomidi/connect for adapters)
+	- Reader.Read reads "live" MIDI from an io.Reader.
+	- Reader.ReadSMF reads SMF MIDI from an io.Reader.
+	- ReadSMFFile reads a complete SMF file.
 
 For a simple example with "live" MIDI and io.Reader and io.Writer see examples/simple/simple_test.go.
 
