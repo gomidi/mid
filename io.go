@@ -58,12 +58,16 @@ type inReader struct {
 func (r *inReader) handleMessage(b []byte, deltaMicroseconds int64) {
 	// use the fake position to get the ticks for the current tempo
 	r.rd.pos = &Position{}
-	tempochange := r.rd.tempoChanges[len(r.rd.tempoChanges)-1]
-	deltaticks := r.rd.resolution.Ticks(tempochange.bpm, time.Duration(deltaMicroseconds*1000))
-	r.rd.pos.DeltaTicks = deltaticks
-	r.rd.pos.AbsoluteTicks += uint64(deltaticks)
+	r.rd.pos.DeltaTicks = r.rd.Ticks(time.Duration(deltaMicroseconds * 1000)) // deltaticks
+	r.rd.pos.AbsoluteTicks += uint64(r.rd.pos.DeltaTicks)
 	r.bf.Write(b)
 	r.rd.dispatchMessage(r.midiReader)
+}
+
+// Ticks returns the ticks that correspond to a duration while respecting the current tempo
+func (r *Reader) Ticks(d time.Duration) uint32 {
+	tempochange := r.tempoChanges[len(r.tempoChanges)-1]
+	return r.resolution.Ticks(tempochange.bpm, d)
 }
 
 // ListenTo configures the Reader to listen to the given MIDI in port.
