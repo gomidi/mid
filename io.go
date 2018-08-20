@@ -13,7 +13,14 @@ import (
 // The gomidi/connect package provides adapters to rtmidi and portaudio
 // that fullfill the InConnection interface.
 type InConnection interface {
+
+	// SetListener sets the callback function that is called when data arrives
+	// println(big.NewRat(math.MaxInt64,1000 /* milliseonds */ *1000 /* seconds */ *60 /* minutes */ *60 /* hours */ *24 /* days */ *365 /* years */).FloatString(0))
+	// output: 292471
+	// => a ascending timestamp based on microseconds would wrap after 292471 years
 	SetListener(func(data []byte, deltaMicroseconds int64))
+
+	// StopListening stops the listening
 	StopListening()
 }
 
