@@ -94,3 +94,7 @@ func (w *midiWriter) ControlChangeOn(controller uint8) error {
 func (w *midiWriter) SystemExclusive(data []byte) error {
 	return w.wr.Write(sysex.SysEx(data))
 }
+
+func (w *midiWriter) Write(msg midi.Message) error {
+	return w.wr.Write(msg)
+}

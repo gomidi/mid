@@ -64,6 +64,11 @@ func (r *inReader) handleMessage(b []byte, deltaMicroseconds int64) {
 	r.rd.dispatchMessage(r.midiReader)
 }
 
+// Duration returns the duration for the given delta ticks, respecting the current tempo
+func (r *Reader) Duration(deltaticks uint32) time.Duration {
+	return r.resolution.Duration(r.Tempo(), deltaticks)
+}
+
 // TicksQuarterNote returns the ticks of a quarternote
 // If it can't be determined, 0 is returned
 func (r *Reader) TicksQuarterNote() uint32 {

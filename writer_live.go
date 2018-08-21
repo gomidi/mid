@@ -1,6 +1,7 @@
 package mid
 
 import (
+	"github.com/gomidi/midi"
 	"github.com/gomidi/midi/midimessage/channel"
 	"github.com/gomidi/midi/midimessage/realtime"
 	"github.com/gomidi/midi/midimessage/syscommon"
@@ -12,6 +13,8 @@ import (
 type Writer struct {
 	*midiWriter
 }
+
+var _ midi.Writer = &Writer{}
 
 // NewWriter creates and new Writer for writing of "live" MIDI data ("over the wire")
 // By default it makes no use of the running status.
