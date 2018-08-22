@@ -87,7 +87,7 @@ func (w *SMFWriter) SetDelta(deltatime uint32) {
 
 // EndOfTrack signals the end of a track
 func (w *SMFWriter) EndOfTrack() error {
-	w.midiWriter.noteState = [16][127]bool{}
+	w.midiWriter.noteState = [16][128]bool{}
 	if no := w.wr.Header().NumTracks; w.finishedTracks >= no {
 		return fmt.Errorf("too many tracks: in header: %v, closed: %v", no, w.finishedTracks+1)
 	}

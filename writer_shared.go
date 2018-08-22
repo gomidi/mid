@@ -11,7 +11,7 @@ import (
 type midiWriter struct {
 	wr              midi.Writer
 	ch              channel.Channel
-	noteState       [16][127]bool
+	noteState       [16][128]bool
 	noConsolidation bool
 }
 
@@ -143,7 +143,7 @@ func (w *midiWriter) Silence(ch int8, force bool) (err error) {
 	if ch >= 0 {
 		err = w.silentium(uint8(ch), force)
 		// set note states for the channel
-		w.noteState[ch] = [127]bool{}
+		w.noteState[ch] = [128]bool{}
 		return
 	}
 
@@ -152,7 +152,7 @@ func (w *midiWriter) Silence(ch int8, force bool) (err error) {
 		err = w.silentium(uint8(c), force)
 	}
 	// reset all note states
-	w.noteState = [16][127]bool{}
+	w.noteState = [16][128]bool{}
 	return
 }
 
@@ -167,7 +167,7 @@ func (w *midiWriter) Silence(ch int8, force bool) (err error) {
 // If on is true, the note will be started tracking again (fresh state), assuming no note is currently running.
 func (w *midiWriter) ConsolidateNotes(on bool) {
 	if on {
-		w.noteState = [16][127]bool{}
+		w.noteState = [16][128]bool{}
 	}
 	w.noConsolidation = !on
 }
