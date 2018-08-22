@@ -2,6 +2,7 @@ package mid
 
 import (
 	"io"
+	"os"
 
 	"github.com/gomidi/midi/smf"
 	"github.com/gomidi/midi/smf/smfreader"
@@ -24,6 +25,22 @@ func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 		return err
 	}
 	return r.errSMF
+}
+
+// ReadSMFFileHeader reads just the header of a SMF file
+func (r *Reader) ReadSMFFileHeader(file string, options ...smfreader.Option) (smf.Header, error) {
+	r.errSMF = nil
+	r.pos = &Position{}
+	f, err := os.Open(file)
+	if err != nil {
+		return smf.Header{}, err
+	}
+	defer f.Close()
+	rd := smfreader.New(f, options...)
+
+	err2 := rd.ReadHeader()
+
+	return rd.Header(), err2
 }
 
 // ReadSMF reads midi messages from src (which is supposed to be the content of a standard midi file (SMF))
