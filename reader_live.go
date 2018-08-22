@@ -5,6 +5,7 @@ import (
 
 	"github.com/gomidi/midi/midimessage/realtime"
 	"github.com/gomidi/midi/midireader"
+	"time"
 )
 
 // Read reads midi messages from src until an error happens (for "live" MIDI data "over the wire").
@@ -34,10 +35,52 @@ func (r *Reader) dispatchRealTime(m realtime.Message) {
 	}
 
 	// clock a bit slower synchronization method (24 MIDI Clocks in every quarter note) comes next
+	// we can use this to calculate the tempo.
 	if m == realtime.TimingClock {
+		var gotClock time.Time
+		if !r.ignoreMIDIClock {
+			gotClock = time.Now()
+		}
+
 		if r.Message.Realtime.Clock != nil {
 			r.Message.Realtime.Clock()
 		}
+
+		if r.ignoreMIDIClock {
+			return
+		}
+
+		r.clockmx.Lock()
+
+		if r.midiClocks[0] == nil {
+			r.midiClocks[0] = &gotClock
+			return
+		}
+
+		if r.midiClocks[1] == nil {
+			r.midiClocks[1] = &gotClock
+			return
+		}
+
+		if r.midiClocks[2] == nil {
+			r.midiClocks[2] = &gotClock
+			return
+		}
+
+		bpm := tempoBasedOnMIDIClocks(r.midiClocks[0], r.midiClocks[1], r.midiClocks[2], &gotClock)
+
+		// move them over
+		r.midiClocks[0] = r.midiClocks[1]
+		r.midiClocks[1] = r.midiClocks[2]
+		r.midiClocks[2] = &gotClock
+
+		r.clockmx.Unlock()
+
+		r.saveTempoChange(*r.pos, bpm)
+		if r.Message.Meta.Tempo != nil {
+			r.Message.Meta.Tempo(*r.pos, bpm)
+		}
+
 		return
 	}
 

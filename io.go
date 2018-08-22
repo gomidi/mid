@@ -69,9 +69,9 @@ func (r *Reader) Duration(deltaticks uint32) time.Duration {
 	return r.resolution.Duration(r.Tempo(), deltaticks)
 }
 
-// TicksQuarterNote returns the ticks of a quarternote
+// Resolution returns the ticks of a quarternote
 // If it can't be determined, 0 is returned
-func (r *Reader) TicksQuarterNote() uint32 {
+func (r *Reader) Resolution() uint32 {
 	if r.resolution == 0 {
 		return 0
 	}

@@ -4,6 +4,8 @@ import (
 	"github.com/gomidi/midi"
 	"github.com/gomidi/midi/midireader"
 	"github.com/gomidi/midi/smf"
+	"sync"
+	"time"
 )
 
 // Reader allows the reading of either "over the wire" MIDI
@@ -33,6 +35,9 @@ type Reader struct {
 	errSMF            error               // error when reading SMF
 	midiReaderOptions []midireader.Option // options for the midireader
 	liveReader        midi.Reader
+	midiClocks        [3]*time.Time
+	clockmx           sync.Mutex // protect the midiClocks
+	ignoreMIDIClock   bool
 
 	// ticks per quarternote
 	resolution smf.MetricTicks
