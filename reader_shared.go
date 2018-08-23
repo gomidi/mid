@@ -58,7 +58,6 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 			return
 		}
 	}
-	return
 }
 
 // dispatchMessage dispatches a single message from the midi.Reader (which might be an smf reader)
