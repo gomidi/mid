@@ -1,6 +1,7 @@
 package mid
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -21,10 +22,13 @@ func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 	r.errSMF = nil
 	r.pos = &Position{}
 	err := smfreader.ReadFile(file, r.readSMF, options...)
-	if err != nil {
+	if err != nil && err != smf.ErrFinished {
 		return err
 	}
-	return r.errSMF
+	if r.errSMF == smf.ErrFinished {
+		return nil
+	}
+	return nil
 }
 
 // ReadSMFFileHeader reads just the header of a SMF file
@@ -33,14 +37,21 @@ func (r *Reader) ReadSMFFileHeader(file string, options ...smfreader.Option) (sm
 	r.pos = &Position{}
 	f, err := os.Open(file)
 	if err != nil {
+		fmt.Printf("can't open file: %v", err)
 		return smf.Header{}, err
 	}
-	defer f.Close()
 	rd := smfreader.New(f, options...)
 
 	err2 := rd.ReadHeader()
 
-	return rd.Header(), err2
+	r.setHeader(rd.Header())
+
+	f.Close()
+
+	if err2 != nil && err2 != smf.ErrFinished {
+		return rd.Header(), err2
+	}
+	return rd.Header(), nil
 }
 
 // ReadSMF reads midi messages from src (which is supposed to be the content of a standard midi file (SMF))
@@ -65,12 +76,17 @@ func (r *Reader) ReadSMF(src io.Reader, options ...smfreader.Option) error {
 	if err != nil {
 		return err
 	}
+	r.setHeader(rd.Header())
 	r.readSMF(rd)
+
+	if r.errSMF == smf.ErrFinished {
+		return nil
+	}
 	return r.errSMF
 }
 
-func (r *Reader) readSMF(rd smf.Reader) {
-	r.header = rd.Header()
+func (r *Reader) setHeader(hd smf.Header) {
+	r.header = hd
 
 	if metric, isMetric := r.header.TimeFormat.(smf.MetricTicks); isMetric {
 		r.resolution = metric
@@ -79,7 +95,9 @@ func (r *Reader) readSMF(rd smf.Reader) {
 	if r.SMFHeader != nil {
 		r.SMFHeader(r.header)
 	}
+}
 
+func (r *Reader) readSMF(rd smf.Reader) {
 	err := r.dispatch(rd)
 	if err != io.EOF {
 		r.errSMF = err

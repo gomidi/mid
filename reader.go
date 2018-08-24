@@ -1,11 +1,12 @@
 package mid
 
 import (
+	"sync"
+	"time"
+
 	"github.com/gomidi/midi"
 	"github.com/gomidi/midi/midireader"
 	"github.com/gomidi/midi/smf"
-	"sync"
-	"time"
 )
 
 // Reader allows the reading of either "over the wire" MIDI
