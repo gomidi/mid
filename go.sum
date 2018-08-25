@@ -1,4 +1,4 @@
 github.com/gomidi/cc v0.0.0-20180817073503-2229485c1c91 h1:0iDXWyTi4TbhX1llyyBg1TotZsulHfYpbmpvq6wa9Tw=
 github.com/gomidi/cc v0.0.0-20180817073503-2229485c1c91/go.mod h1:pp/v4mQ8/Z6O7KoGukAO9MNQ5nhUUgAJlJU7XsC4IpI=
-github.com/gomidi/midi v1.2.2 h1:KEJ8WToFIXX9vCK6Gy1jYvEr2c/aa2YIrNIKxP8Yp+c=
-github.com/gomidi/midi v1.2.2/go.mod h1:B16DbgtsXSbQK9Q75aVezVL6VGhaK+2CVe/ybwUUCHE=
+github.com/gomidi/midi v1.2.3 h1:fZjB/y59V2a2RD3mkgLWHsHDo4mYca0r+4g8t2EesHA=
+github.com/gomidi/midi v1.2.3/go.mod h1:B16DbgtsXSbQK9Q75aVezVL6VGhaK+2CVe/ybwUUCHE=
