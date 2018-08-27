@@ -100,7 +100,7 @@ To connect it with the outside MIDI world (the MIDI ports of your computer), the
 
 API mostly stable and complete
 
-- Go version: >= 1.5
+- Go version: >= 1.10
 - OS/architectures: everywhere Go runs (tested on Linux and Windows).
 
 ## Installation
