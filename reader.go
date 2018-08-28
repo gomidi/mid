@@ -46,8 +46,8 @@ type Reader struct {
 	// SMFHeader is the callback that gets SMF header data
 	SMFHeader func(smf.Header)
 
-	// Message provides callbacks for MIDI messages
-	Message struct {
+	// Msg provides callbacks for MIDI messages
+	Msg struct {
 
 		// Each is called for every MIDI message in addition to the other callbacks.
 		Each func(*Position, midi.Message)
@@ -64,11 +64,11 @@ type Reader struct {
 			// Tempo is called for the tempo (change) message
 			Tempo func(p Position, bpm uint32)
 
-			// TimeSignature is called for the time signature (change) message
-			TimeSignature func(p Position, num, denom uint8)
+			// TimeSigis called for the time signature (change) message
+			TimeSig func(p Position, num, denom uint8)
 
-			// KeySignature is called for the key signature (change) message
-			KeySignature func(p Position, key uint8, ismajor bool, num_accidentals uint8, accidentals_are_flat bool)
+			// Key is called for the key signature (change) message
+			Key func(p Position, key uint8, ismajor bool, num_accidentals uint8, accidentals_are_flat bool)
 
 			// Track is called for the track (name) message
 			Track func(p Position, name string)
@@ -76,8 +76,8 @@ type Reader struct {
 			// Sequence is called for the sequence (name) message
 			Sequence func(p Position, name string)
 
-			// SequenceNumber is called for the sequence number message
-			SequenceNumber func(p Position, number uint16)
+			// SequenceNo is called for the sequence number message
+			SequenceNo func(p Position, number uint16)
 
 			// Marker is called for the marker message
 			Marker func(p Position, text string)
@@ -94,23 +94,25 @@ type Reader struct {
 			// EndOfTrack is called for the end of a track message
 			EndOfTrack func(p Position)
 
-			// DevicePort is called for the device port message
-			DevicePort func(p Position, name string)
+			// Device is called for the device port message
+			Device func(p Position, name string)
 
-			// ProgramName is called for the program name message
-			ProgramName func(p Position, text string)
+			// Program is called for the program name message
+			Program func(p Position, text string)
 
-			// SMPTEOffset is called for the smpte offset message
-			SMPTEOffset func(p Position, hour, minute, second, frame, fractionalFrame byte)
+			// SMPTE is called for the smpte offset message
+			SMPTE func(p Position, hour, minute, second, frame, fractionalFrame byte)
 
-			// SequencerSpecific is called for the sequencer specific message
-			SequencerSpecific func(p Position, data []byte)
+			// SequencerData is called for the sequencer specific message
+			SequencerData func(p Position, data []byte)
 
-			// MIDIChannel is called for the deprecated MIDI channel message
-			MIDIChannel func(p Position, channel uint8)
+			Deprecated struct {
+				// Channel is called for the deprecated MIDI channel message
+				Channel func(p Position, channel uint8)
 
-			// MIDIPort is called for the deprecated MIDI port message
-			MIDIPort func(p Position, port uint8)
+				// Port is called for the deprecated MIDI port message
+				Port func(p Position, port uint8)
+			}
 		}
 
 		// Channel provides callbacks for channel messages
@@ -126,17 +128,17 @@ type Reader struct {
 			// and for noteon messages of velocity 0 (then velocity is 0).
 			NoteOff func(p *Position, channel, key, velocity uint8)
 
-			// PitchBend is called for pitch bend messages
-			PitchBend func(p *Position, channel uint8, value int16)
+			// Pitchbend is called for pitch bend messages
+			Pitchbend func(p *Position, channel uint8, value int16)
 
 			// ProgramChange is called for program change messages. Program numbers start with 0.
 			ProgramChange func(p *Position, channel, program uint8)
 
-			// AfterTouch is called for aftertouch messages  (aka "channel pressure")
-			AfterTouch func(p *Position, channel, pressure uint8)
+			// Aftertouch is called for aftertouch messages  (aka "channel pressure")
+			Aftertouch func(p *Position, channel, pressure uint8)
 
-			// PolyAfterTouch is called for polyphonic aftertouch messages (aka "key pressure").
-			PolyAfterTouch func(p *Position, channel, key, pressure uint8)
+			// PolyAftertouch is called for polyphonic aftertouch messages (aka "key pressure").
+			PolyAftertouch func(p *Position, channel, key, pressure uint8)
 
 			// ControlChange is called for control change messages
 			ControlChange func(p *Position, channel, controller, value uint8)
@@ -152,8 +154,8 @@ type Reader struct {
 			// Tick is called for a tick message
 			Tick func()
 
-			// ActiveSense is called for a active sense message
-			ActiveSense func()
+			// Activesense is called for a active sense message
+			Activesense func()
 
 			// Start is called for a start message
 			Start func()
@@ -168,27 +170,27 @@ type Reader struct {
 			Reset func()
 		}
 
-		// SystemCommon provides callbacks for system common messages.
+		// SysCommon provides callbacks for system common messages.
 		// They are only used with "live" MIDI
-		SystemCommon struct {
+		SysCommon struct {
 
-			// TuneRequest is called for a tune request message
-			TuneRequest func()
+			// Tune is called for a tune request message
+			Tune func()
 
 			// SongSelect is called for a song select message
 			SongSelect func(num uint8)
 
-			// SongPositionPointer is called for a song position pointer message
-			SongPositionPointer func(pos uint16)
+			// SPP is called for a song position pointer message
+			SPP func(pos uint16)
 
-			// MIDITimingCode is called for a MIDI timing code message
-			MIDITimingCode func(frame uint8)
+			// MTC is called for a MIDI timing code message
+			MTC func(frame uint8)
 		}
 
-		// SystemExcluse provides callbacks for system exclusive messages.
+		// SysEx provides callbacks for system exclusive messages.
 		// They may occur in SMF files and in live MIDI.
 		// For live MIDI *Position is nil.
-		SystemExcluse struct {
+		SysEx struct {
 
 			// Complete is called for a complete system exclusive message
 			Complete func(p *Position, data []byte)

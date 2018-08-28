@@ -22,14 +22,14 @@ func (w *midiWriter) SetChannel(no uint8 /* 0-15 */) {
 	w.ch = channel.Channel(no)
 }
 
-// AfterTouch writes a channel pressure message for the current channel
-func (w *midiWriter) AfterTouch(pressure uint8) error {
-	return w.wr.Write(w.ch.AfterTouch(pressure))
+// Aftertouch writes a channel pressure message for the current channel
+func (w *midiWriter) Aftertouch(pressure uint8) error {
+	return w.wr.Write(w.ch.Aftertouch(pressure))
 }
 
-// PolyAfterTouch writes a key pressure message for the current channel
-func (w *midiWriter) PolyAfterTouch(key, pressure uint8) error {
-	return w.wr.Write(w.ch.PolyAfterTouch(key, pressure))
+// PolyAftertouch writes a key pressure message for the current channel
+func (w *midiWriter) PolyAftertouch(key, pressure uint8) error {
+	return w.wr.Write(w.ch.PolyAftertouch(key, pressure))
 }
 
 // NoteOff writes a note off message for the current channel
@@ -50,11 +50,11 @@ func (w *midiWriter) NoteOn(key, veloctiy uint8) error {
 	return w.Write(w.ch.NoteOn(key, veloctiy))
 }
 
-// PitchBend writes a pitch bend message for the current channel
+// Pitchbend writes a pitch bend message for the current channel
 // For reset value, use 0, for lowest -8191 and highest 8191
 // Or use the pitch constants of midimessage/channel
-func (w *midiWriter) PitchBend(value int16) error {
-	return w.wr.Write(w.ch.PitchBend(value))
+func (w *midiWriter) Pitchbend(value int16) error {
+	return w.wr.Write(w.ch.Pitchbend(value))
 }
 
 // ProgramChange writes a program change message for the current channel
@@ -92,18 +92,18 @@ func (w *midiWriter) ControlChange(controller, value uint8) error {
 	return w.wr.Write(w.ch.ControlChange(controller, value))
 }
 
-// ControlChangeOff writes a control change message with a value of 0 (=off) for the current channel
-func (w *midiWriter) ControlChangeOff(controller uint8) error {
+// CcOff writes a control change message with a value of 0 (=off) for the current channel
+func (w *midiWriter) CcOff(controller uint8) error {
 	return w.ControlChange(controller, 0)
 }
 
-// ControlChangeOn writes a control change message with a value of 127 (=on) for the current channel
-func (w *midiWriter) ControlChangeOn(controller uint8) error {
+// CcOn writes a control change message with a value of 127 (=on) for the current channel
+func (w *midiWriter) CcOn(controller uint8) error {
 	return w.ControlChange(controller, 127)
 }
 
-// SystemExclusive writes system exclusive data
-func (w *midiWriter) SystemExclusive(data []byte) error {
+// SysEx writes system exclusive data
+func (w *midiWriter) SysEx(data []byte) error {
 	return w.wr.Write(sysex.SysEx(data))
 }
 

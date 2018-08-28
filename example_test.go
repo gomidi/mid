@@ -84,9 +84,9 @@ func Example() {
 
 	// setup the callbacks
 	rd.SMFHeader = ex.SMFHeader
-	rd.Message.Meta.Tempo = ex.Tempo
-	rd.Message.Channel.NoteOn = ex.NoteOn
-	rd.Message.Channel.NoteOff = ex.NoteOff
+	rd.Msg.Meta.Tempo = ex.Tempo
+	rd.Msg.Channel.NoteOn = ex.NoteOn
+	rd.Msg.Channel.NoteOff = ex.NoteOff
 
 	// handle the smf
 	fmt.Println("-- SMF data --")

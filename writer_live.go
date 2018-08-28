@@ -1,12 +1,13 @@
 package mid
 
 import (
+	"io"
+
 	"github.com/gomidi/midi"
 	"github.com/gomidi/midi/midimessage/channel"
 	"github.com/gomidi/midi/midimessage/realtime"
 	"github.com/gomidi/midi/midimessage/syscommon"
 	"github.com/gomidi/midi/midiwriter"
-	"io"
 )
 
 // Writer writes live MIDI data. Its methods must not be called concurrently
@@ -29,8 +30,8 @@ func NewWriter(dest io.Writer, options ...midiwriter.Option) *Writer {
 }
 
 // ActiveSensing writes the active sensing realtime message
-func (w *Writer) ActiveSensing() error {
-	return w.midiWriter.wr.Write(realtime.ActiveSensing)
+func (w *Writer) Activesense() error {
+	return w.midiWriter.wr.Write(realtime.Activesense)
 }
 
 // Continue writes the continue realtime message
@@ -63,14 +64,14 @@ func (w *Writer) TimingClock() error {
 	return w.midiWriter.wr.Write(realtime.TimingClock)
 }
 
-// MIDITimingCode writes the MIDI Timing Code system message
-func (w *Writer) MIDITimingCode(code uint8) error {
-	return w.midiWriter.wr.Write(syscommon.MIDITimingCode(code))
+// MTC writes the MIDI Timing Code system message
+func (w *Writer) MTC(code uint8) error {
+	return w.midiWriter.wr.Write(syscommon.MTC(code))
 }
 
-// SongPositionPointer writes the song position pointer system message
-func (w *Writer) SongPositionPointer(ptr uint16) error {
-	return w.midiWriter.wr.Write(syscommon.SongPositionPointer(ptr))
+// SPP writes the song position pointer system message
+func (w *Writer) SPP(ptr uint16) error {
+	return w.midiWriter.wr.Write(syscommon.SPP(ptr))
 }
 
 // SongSelect writes the song select system message
@@ -78,7 +79,7 @@ func (w *Writer) SongSelect(song uint8) error {
 	return w.midiWriter.wr.Write(syscommon.SongSelect(song))
 }
 
-// TuneRequest writes the tune request system message
-func (w *Writer) TuneRequest() error {
-	return w.midiWriter.wr.Write(syscommon.TuneRequest)
+// Tune writes the tune request system message
+func (w *Writer) Tune() error {
+	return w.midiWriter.wr.Write(syscommon.Tune)
 }

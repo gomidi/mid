@@ -3,9 +3,10 @@ package mid
 import (
 	"io"
 
+	"time"
+
 	"github.com/gomidi/midi/midimessage/realtime"
 	"github.com/gomidi/midi/midireader"
-	"time"
 )
 
 // Read reads midi messages from src until an error happens (for "live" MIDI data "over the wire").
@@ -28,8 +29,8 @@ func (r *Reader) dispatchRealTime(m realtime.Message) {
 
 	// ticks (most important, must be sent every 10 milliseconds) comes first
 	if m == realtime.Tick {
-		if r.Message.Realtime.Tick != nil {
-			r.Message.Realtime.Tick()
+		if r.Msg.Realtime.Tick != nil {
+			r.Msg.Realtime.Tick()
 		}
 		return
 	}
@@ -42,8 +43,8 @@ func (r *Reader) dispatchRealTime(m realtime.Message) {
 			gotClock = time.Now()
 		}
 
-		if r.Message.Realtime.Clock != nil {
-			r.Message.Realtime.Clock()
+		if r.Msg.Realtime.Clock != nil {
+			r.Msg.Realtime.Clock()
 		}
 
 		if r.ignoreMIDIClock {
@@ -77,8 +78,8 @@ func (r *Reader) dispatchRealTime(m realtime.Message) {
 		r.clockmx.Unlock()
 
 		r.saveTempoChange(*r.pos, bpm)
-		if r.Message.Meta.Tempo != nil {
-			r.Message.Meta.Tempo(*r.pos, bpm)
+		if r.Msg.Meta.Tempo != nil {
+			r.Msg.Meta.Tempo(*r.pos, bpm)
 		}
 
 		return
@@ -86,49 +87,49 @@ func (r *Reader) dispatchRealTime(m realtime.Message) {
 
 	// starting should not take too long
 	if m == realtime.Start {
-		if r.Message.Realtime.Start != nil {
-			r.Message.Realtime.Start()
+		if r.Msg.Realtime.Start != nil {
+			r.Msg.Realtime.Start()
 		}
 		return
 	}
 
 	// continuing should not take too long
 	if m == realtime.Continue {
-		if r.Message.Realtime.Continue != nil {
-			r.Message.Realtime.Continue()
+		if r.Msg.Realtime.Continue != nil {
+			r.Msg.Realtime.Continue()
 		}
 		return
 	}
 
 	// Active Sense must come every 300 milliseconds
 	// (but is seldom implemented)
-	if m == realtime.ActiveSensing {
-		if r.Message.Realtime.ActiveSense != nil {
-			r.Message.Realtime.ActiveSense()
+	if m == realtime.Activesense {
+		if r.Msg.Realtime.Activesense != nil {
+			r.Msg.Realtime.Activesense()
 		}
 		return
 	}
 
 	// put any user defined realtime message here
 	if m == realtime.Undefined4 {
-		if r.Message.Unknown != nil {
-			r.Message.Unknown(r.pos, m)
+		if r.Msg.Unknown != nil {
+			r.Msg.Unknown(r.pos, m)
 		}
 		return
 	}
 
 	// stopping is not so urgent
 	if m == realtime.Stop {
-		if r.Message.Realtime.Stop != nil {
-			r.Message.Realtime.Stop()
+		if r.Msg.Realtime.Stop != nil {
+			r.Msg.Realtime.Stop()
 		}
 		return
 	}
 
 	// reset may take some time anyway
 	if m == realtime.Reset {
-		if r.Message.Realtime.Reset != nil {
-			r.Message.Realtime.Reset()
+		if r.Msg.Realtime.Reset != nil {
+			r.Msg.Realtime.Reset()
 		}
 		return
 	}

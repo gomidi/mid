@@ -4,14 +4,17 @@ import (
 	"testing"
 	//"io"
 	"bytes"
+
 	"github.com/gomidi/midi"
 	"github.com/gomidi/midi/midimessage/channel"
 	"github.com/gomidi/midi/midimessage/syscommon"
 	"github.com/gomidi/midi/midimessage/sysex"
+
 	//"github.com/gomidi/midiio"
+	"reflect"
+
 	mr "github.com/gomidi/midi/midireader"
 	mw "github.com/gomidi/midi/midiwriter"
-	"reflect"
 )
 
 func m(msgs ...midi.Message) []midi.Message {
@@ -58,8 +61,8 @@ func TestConsolidation(t *testing.T) {
 			true,
 		},
 		{
-			m(channel.Channel1.NoteOn(127, 34), syscommon.TuneRequest, channel.Channel1.NoteOn(127, 36), channel.Channel1.NoteOff(127)),
-			m(channel.Channel1.NoteOn(127, 34), syscommon.TuneRequest, channel.Channel1.NoteOff(127)),
+			m(channel.Channel1.NoteOn(127, 34), syscommon.Tune, channel.Channel1.NoteOn(127, 36), channel.Channel1.NoteOff(127)),
+			m(channel.Channel1.NoteOn(127, 34), syscommon.Tune, channel.Channel1.NoteOff(127)),
 			true,
 		},
 		{

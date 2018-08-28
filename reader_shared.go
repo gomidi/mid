@@ -79,209 +79,209 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 		r.log(m)
 	}
 
-	if r.Message.Each != nil {
-		r.Message.Each(r.pos, m)
+	if r.Msg.Each != nil {
+		r.Msg.Each(r.pos, m)
 	}
 
 	switch msg := m.(type) {
 
 	// most common event, should be exact
 	case channel.NoteOn:
-		if r.Message.Channel.NoteOn != nil {
-			r.Message.Channel.NoteOn(r.pos, msg.Channel(), msg.Key(), msg.Velocity())
+		if r.Msg.Channel.NoteOn != nil {
+			r.Msg.Channel.NoteOn(r.pos, msg.Channel(), msg.Key(), msg.Velocity())
 		}
 
 	// proably second most common
 	case channel.NoteOff:
-		if r.Message.Channel.NoteOff != nil {
-			r.Message.Channel.NoteOff(r.pos, msg.Channel(), msg.Key(), 0)
+		if r.Msg.Channel.NoteOff != nil {
+			r.Msg.Channel.NoteOff(r.pos, msg.Channel(), msg.Key(), 0)
 		}
 
 	case channel.NoteOffVelocity:
-		if r.Message.Channel.NoteOff != nil {
-			r.Message.Channel.NoteOff(r.pos, msg.Channel(), msg.Key(), msg.Velocity())
+		if r.Msg.Channel.NoteOff != nil {
+			r.Msg.Channel.NoteOff(r.pos, msg.Channel(), msg.Key(), msg.Velocity())
 		}
 
 	// if send there often are a lot of them
-	case channel.PitchBend:
-		if r.Message.Channel.PitchBend != nil {
-			r.Message.Channel.PitchBend(r.pos, msg.Channel(), msg.Value())
+	case channel.Pitchbend:
+		if r.Msg.Channel.Pitchbend != nil {
+			r.Msg.Channel.Pitchbend(r.pos, msg.Channel(), msg.Value())
 		}
 
-	case channel.PolyAfterTouch:
-		if r.Message.Channel.PolyAfterTouch != nil {
-			r.Message.Channel.PolyAfterTouch(r.pos, msg.Channel(), msg.Key(), msg.Pressure())
+	case channel.PolyAftertouch:
+		if r.Msg.Channel.PolyAftertouch != nil {
+			r.Msg.Channel.PolyAftertouch(r.pos, msg.Channel(), msg.Key(), msg.Pressure())
 		}
 
-	case channel.AfterTouch:
-		if r.Message.Channel.AfterTouch != nil {
-			r.Message.Channel.AfterTouch(r.pos, msg.Channel(), msg.Pressure())
+	case channel.Aftertouch:
+		if r.Msg.Channel.Aftertouch != nil {
+			r.Msg.Channel.Aftertouch(r.pos, msg.Channel(), msg.Pressure())
 		}
 
 	case channel.ControlChange:
-		if r.Message.Channel.ControlChange != nil {
-			r.Message.Channel.ControlChange(r.pos, msg.Channel(), msg.Controller(), msg.Value())
+		if r.Msg.Channel.ControlChange != nil {
+			r.Msg.Channel.ControlChange(r.pos, msg.Channel(), msg.Controller(), msg.Value())
 		}
 
-	case meta.SMPTEOffset:
-		if r.Message.Meta.SMPTEOffset != nil {
-			r.Message.Meta.SMPTEOffset(*r.pos, msg.Hour, msg.Minute, msg.Second, msg.Frame, msg.FractionalFrame)
+	case meta.SMPTE:
+		if r.Msg.Meta.SMPTE != nil {
+			r.Msg.Meta.SMPTE(*r.pos, msg.Hour, msg.Minute, msg.Second, msg.Frame, msg.FractionalFrame)
 		}
 
 	case meta.Tempo:
 		r.saveTempoChange(*r.pos, msg.BPM())
-		if r.Message.Meta.Tempo != nil {
-			r.Message.Meta.Tempo(*r.pos, msg.BPM())
+		if r.Msg.Meta.Tempo != nil {
+			r.Msg.Meta.Tempo(*r.pos, msg.BPM())
 		}
 
-	case meta.TimeSignature:
-		if r.Message.Meta.TimeSignature != nil {
-			r.Message.Meta.TimeSignature(*r.pos, msg.Numerator, msg.Denominator)
+	case meta.TimeSig:
+		if r.Msg.Meta.TimeSig != nil {
+			r.Msg.Meta.TimeSig(*r.pos, msg.Numerator, msg.Denominator)
 		}
 
 		// may be for karaoke we need to be fast
 	case meta.Lyric:
-		if r.Message.Meta.Lyric != nil {
-			r.Message.Meta.Lyric(*r.pos, msg.Text())
+		if r.Msg.Meta.Lyric != nil {
+			r.Msg.Meta.Lyric(*r.pos, msg.Text())
 		}
 
 	// may be useful to synchronize by sequence number
-	case meta.SequenceNumber:
-		if r.Message.Meta.SequenceNumber != nil {
-			r.Message.Meta.SequenceNumber(*r.pos, msg.Number())
+	case meta.SequenceNo:
+		if r.Msg.Meta.SequenceNo != nil {
+			r.Msg.Meta.SequenceNo(*r.pos, msg.Number())
 		}
 
 	case meta.Marker:
-		if r.Message.Meta.Marker != nil {
-			r.Message.Meta.Marker(*r.pos, msg.Text())
+		if r.Msg.Meta.Marker != nil {
+			r.Msg.Meta.Marker(*r.pos, msg.Text())
 		}
 
 	case meta.Cuepoint:
-		if r.Message.Meta.Cuepoint != nil {
-			r.Message.Meta.Cuepoint(*r.pos, msg.Text())
+		if r.Msg.Meta.Cuepoint != nil {
+			r.Msg.Meta.Cuepoint(*r.pos, msg.Text())
 		}
 
-	case meta.ProgramName:
-		if r.Message.Meta.ProgramName != nil {
-			r.Message.Meta.ProgramName(*r.pos, msg.Text())
+	case meta.Program:
+		if r.Msg.Meta.Program != nil {
+			r.Msg.Meta.Program(*r.pos, msg.Text())
 		}
 
-	case meta.SequencerSpecific:
-		if r.Message.Meta.SequencerSpecific != nil {
-			r.Message.Meta.SequencerSpecific(*r.pos, msg.Data())
+	case meta.SequencerData:
+		if r.Msg.Meta.SequencerData != nil {
+			r.Msg.Meta.SequencerData(*r.pos, msg.Data())
 		}
 
 	case sysex.SysEx:
-		if r.Message.SystemExcluse.Complete != nil {
-			r.Message.SystemExcluse.Complete(r.pos, msg.Data())
+		if r.Msg.SysEx.Complete != nil {
+			r.Msg.SysEx.Complete(r.pos, msg.Data())
 		}
 
 	case sysex.Start:
-		if r.Message.SystemExcluse.Start != nil {
-			r.Message.SystemExcluse.Start(r.pos, msg.Data())
+		if r.Msg.SysEx.Start != nil {
+			r.Msg.SysEx.Start(r.pos, msg.Data())
 		}
 
 	case sysex.End:
-		if r.Message.SystemExcluse.End != nil {
-			r.Message.SystemExcluse.End(r.pos, msg.Data())
+		if r.Msg.SysEx.End != nil {
+			r.Msg.SysEx.End(r.pos, msg.Data())
 		}
 
 	case sysex.Continue:
-		if r.Message.SystemExcluse.Continue != nil {
-			r.Message.SystemExcluse.Continue(r.pos, msg.Data())
+		if r.Msg.SysEx.Continue != nil {
+			r.Msg.SysEx.Continue(r.pos, msg.Data())
 		}
 
 	case sysex.Escape:
-		if r.Message.SystemExcluse.Escape != nil {
-			r.Message.SystemExcluse.Escape(r.pos, msg.Data())
+		if r.Msg.SysEx.Escape != nil {
+			r.Msg.SysEx.Escape(r.pos, msg.Data())
 		}
 
 	// this usually takes some time
 	case channel.ProgramChange:
-		if r.Message.Channel.ProgramChange != nil {
-			r.Message.Channel.ProgramChange(r.pos, msg.Channel(), msg.Program())
+		if r.Msg.Channel.ProgramChange != nil {
+			r.Msg.Channel.ProgramChange(r.pos, msg.Channel(), msg.Program())
 		}
 
 	// the rest is not that interesting for performance
-	case meta.KeySignature:
-		if r.Message.Meta.KeySignature != nil {
-			r.Message.Meta.KeySignature(*r.pos, msg.Key, msg.IsMajor, msg.Num, msg.IsFlat)
+	case meta.Key:
+		if r.Msg.Meta.Key != nil {
+			r.Msg.Meta.Key(*r.pos, msg.Key, msg.IsMajor, msg.Num, msg.IsFlat)
 		}
 
 	case meta.Sequence:
-		if r.Message.Meta.Sequence != nil {
-			r.Message.Meta.Sequence(*r.pos, msg.Text())
+		if r.Msg.Meta.Sequence != nil {
+			r.Msg.Meta.Sequence(*r.pos, msg.Text())
 		}
 
 	case meta.Track:
-		if r.Message.Meta.Track != nil {
-			r.Message.Meta.Track(*r.pos, msg.Text())
+		if r.Msg.Meta.Track != nil {
+			r.Msg.Meta.Track(*r.pos, msg.Text())
 		}
 
-	case meta.MIDIChannel:
-		if r.Message.Meta.MIDIChannel != nil {
-			r.Message.Meta.MIDIChannel(*r.pos, msg.Number())
+	case meta.Channel:
+		if r.Msg.Meta.Deprecated.Channel != nil {
+			r.Msg.Meta.Deprecated.Channel(*r.pos, msg.Number())
 		}
 
-	case meta.MIDIPort:
-		if r.Message.Meta.MIDIPort != nil {
-			r.Message.Meta.MIDIPort(*r.pos, msg.Number())
+	case meta.Port:
+		if r.Msg.Meta.Deprecated.Port != nil {
+			r.Msg.Meta.Deprecated.Port(*r.pos, msg.Number())
 		}
 
 	case meta.Text:
-		if r.Message.Meta.Text != nil {
-			r.Message.Meta.Text(*r.pos, msg.Text())
+		if r.Msg.Meta.Text != nil {
+			r.Msg.Meta.Text(*r.pos, msg.Text())
 		}
 
 	case syscommon.SongSelect:
-		if r.Message.SystemCommon.SongSelect != nil {
-			r.Message.SystemCommon.SongSelect(msg.Number())
+		if r.Msg.SysCommon.SongSelect != nil {
+			r.Msg.SysCommon.SongSelect(msg.Number())
 		}
 
-	case syscommon.SongPositionPointer:
-		if r.Message.SystemCommon.SongPositionPointer != nil {
-			r.Message.SystemCommon.SongPositionPointer(msg.Number())
+	case syscommon.SPP:
+		if r.Msg.SysCommon.SPP != nil {
+			r.Msg.SysCommon.SPP(msg.Number())
 		}
 
-	case syscommon.MIDITimingCode:
-		if r.Message.SystemCommon.MIDITimingCode != nil {
-			r.Message.SystemCommon.MIDITimingCode(msg.QuarterFrame())
+	case syscommon.MTC:
+		if r.Msg.SysCommon.MTC != nil {
+			r.Msg.SysCommon.MTC(msg.QuarterFrame())
 		}
 
 	case meta.Copyright:
-		if r.Message.Meta.Copyright != nil {
-			r.Message.Meta.Copyright(*r.pos, msg.Text())
+		if r.Msg.Meta.Copyright != nil {
+			r.Msg.Meta.Copyright(*r.pos, msg.Text())
 		}
 
-	case meta.DevicePort:
-		if r.Message.Meta.DevicePort != nil {
-			r.Message.Meta.DevicePort(*r.pos, msg.Text())
+	case meta.Device:
+		if r.Msg.Meta.Device != nil {
+			r.Msg.Meta.Device(*r.pos, msg.Text())
 		}
 
 	//case meta.Undefined, syscommon.Undefined4, syscommon.Undefined5:
 	case meta.Undefined:
-		if r.Message.Unknown != nil {
-			r.Message.Unknown(r.pos, m)
+		if r.Msg.Unknown != nil {
+			r.Msg.Unknown(r.pos, m)
 		}
 
 	default:
 		switch m {
-		case syscommon.TuneRequest:
-			if r.Message.SystemCommon.TuneRequest != nil {
-				r.Message.SystemCommon.TuneRequest()
+		case syscommon.Tune:
+			if r.Msg.SysCommon.Tune != nil {
+				r.Msg.SysCommon.Tune()
 			}
 		case meta.EndOfTrack:
 			if _, ok := rd.(smf.Reader); ok && r.pos != nil {
 				r.pos.DeltaTicks = 0
 				r.pos.AbsoluteTicks = 0
 			}
-			if r.Message.Meta.EndOfTrack != nil {
-				r.Message.Meta.EndOfTrack(*r.pos)
+			if r.Msg.Meta.EndOfTrack != nil {
+				r.Msg.Meta.EndOfTrack(*r.pos)
 			}
 		default:
 
-			if r.Message.Unknown != nil {
-				r.Message.Unknown(r.pos, m)
+			if r.Msg.Unknown != nil {
+				r.Msg.Unknown(r.pos, m)
 			}
 
 		}

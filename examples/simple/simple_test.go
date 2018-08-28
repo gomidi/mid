@@ -2,9 +2,10 @@ package simple_test
 
 import (
 	"fmt"
-	"github.com/gomidi/mid"
 	"io"
 	"time"
+
+	"github.com/gomidi/mid"
 )
 
 func noteOn(p *mid.Position, channel, key, vel uint8) {
@@ -20,8 +21,8 @@ func Example() {
 	rd := mid.NewReader()
 
 	// set the functions for the messages you are interested in
-	rd.Message.Channel.NoteOn = noteOn
-	rd.Message.Channel.NoteOff = noteOff
+	rd.Msg.Channel.NoteOn = noteOn
+	rd.Msg.Channel.NoteOff = noteOff
 
 	// to allow reading and writing concurrently in this example
 	// we need a pipe

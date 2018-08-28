@@ -8,12 +8,14 @@ import (
 	// "github.com/gomidi/midi/internal/midilib"
 	"github.com/gomidi/midi/midimessage/channel"
 	"github.com/gomidi/midi/midimessage/meta"
+
 	// "github.com/gomidi/midi/midimessage/realtime"
 	// "github.com/gomidi/midi/midimessage/syscommon"
-	"github.com/gomidi/midi/smf"
-	"github.com/gomidi/midi/smf/smfwriter"
 	"io"
 	"os"
+
+	"github.com/gomidi/midi/smf"
+	"github.com/gomidi/midi/smf/smfwriter"
 	// "time"
 )
 
@@ -105,21 +107,21 @@ func (w *SMFWriter) Cuepoint(text string) error {
 	return w.wr.Write(meta.Cuepoint(text))
 }
 
-// DevicePort writes the device port meta message
-func (w *SMFWriter) DevicePort(port string) error {
-	return w.wr.Write(meta.DevicePort(port))
+// Device writes the device port meta message
+func (w *SMFWriter) Device(port string) error {
+	return w.wr.Write(meta.Device(port))
 }
 
-// KeySignature writes the key signature meta message.
+// KeySig writes the key signature meta message.
 // A more comfortable way is to use the Key method in conjunction
 // with the midimessage/meta/key package
-func (w *SMFWriter) KeySignature(key uint8, ismajor bool, num uint8, isflat bool) error {
-	return w.wr.Write(meta.KeySignature{Key: key, IsMajor: ismajor, Num: num, IsFlat: isflat})
+func (w *SMFWriter) KeySig(key uint8, ismajor bool, num uint8, isflat bool) error {
+	return w.wr.Write(meta.Key{Key: key, IsMajor: ismajor, Num: num, IsFlat: isflat})
 }
 
 // Key writes the given key signature meta message.
 // It is supposed to be used with the midimessage/meta/key package
-func (w *SMFWriter) Key(keysig meta.KeySignature) error {
+func (w *SMFWriter) Key(keysig meta.Key) error {
 	return w.wr.Write(keysig)
 }
 
@@ -133,19 +135,19 @@ func (w *SMFWriter) Marker(text string) error {
 	return w.wr.Write(meta.Marker(text))
 }
 
-// MIDIChannel writes the deprecated MIDI channel meta message
-func (w *SMFWriter) MIDIChannel(ch uint8) error {
-	return w.wr.Write(meta.MIDIChannel(ch))
+// DeprecatedChannel writes the deprecated MIDI channel meta message
+func (w *SMFWriter) DeprecatedChannel(ch uint8) error {
+	return w.wr.Write(meta.Channel(ch))
 }
 
-// MIDIPort writes the deprecated MIDI port meta message
-func (w *SMFWriter) MIDIPort(port uint8) error {
-	return w.wr.Write(meta.MIDIPort(port))
+// DeprecatedPort writes the deprecated MIDI port meta message
+func (w *SMFWriter) DeprecatedPort(port uint8) error {
+	return w.wr.Write(meta.Port(port))
 }
 
-// ProgramName writes the program name meta message
-func (w *SMFWriter) ProgramName(text string) error {
-	return w.wr.Write(meta.ProgramName(text))
+// Program writes the program name meta message
+func (w *SMFWriter) Program(text string) error {
+	return w.wr.Write(meta.Program(text))
 }
 
 // Sequence writes the sequence (name) meta message
@@ -153,19 +155,19 @@ func (w *SMFWriter) Sequence(text string) error {
 	return w.wr.Write(meta.Sequence(text))
 }
 
-// SequenceNumber writes the sequence number meta message
-func (w *SMFWriter) SequenceNumber(no uint16) error {
-	return w.wr.Write(meta.SequenceNumber(no))
+// SequenceNo writes the sequence number meta message
+func (w *SMFWriter) SequenceNo(no uint16) error {
+	return w.wr.Write(meta.SequenceNo(no))
 }
 
-// SequencerSpecific writes a custom sequences specific meta message
-func (w *SMFWriter) SequencerSpecific(data []byte) error {
-	return w.wr.Write(meta.SequencerSpecific(data))
+// SequencerData writes a custom sequences specific meta message
+func (w *SMFWriter) SequencerData(data []byte) error {
+	return w.wr.Write(meta.SequencerData(data))
 }
 
-// SMPTEOffset writes the SMPTE offset meta message
-func (w *SMFWriter) SMPTEOffset(hour, minute, second, frame, fractionalFrame byte) error {
-	return w.wr.Write(meta.SMPTEOffset{
+// SMPTE writes the SMPTE offset meta message
+func (w *SMFWriter) SMPTE(hour, minute, second, frame, fractionalFrame byte) error {
+	return w.wr.Write(meta.SMPTE{
 		Hour:            hour,
 		Minute:          minute,
 		Second:          second,
@@ -190,12 +192,12 @@ func (w *SMFWriter) Meter(numerator, denominator uint8) error {
 	return w.wr.Write(meter.Meter(numerator, denominator))
 }
 
-// TimeSignature writes the time signature meta message.
+// TimeSig writes the time signature meta message.
 // Numerator and Denominator are decimalw.
 // If you don't want to deal with clocks per click and demisemiquaverperquarter,
 // user the Meter method instead.
-func (w *SMFWriter) TimeSignature(numerator, denominator, clocksPerClick, demiSemiQuaverPerQuarter uint8) error {
-	return w.wr.Write(meta.TimeSignature{
+func (w *SMFWriter) TimeSig(numerator, denominator, clocksPerClick, demiSemiQuaverPerQuarter uint8) error {
+	return w.wr.Write(meta.TimeSig{
 		Numerator:                numerator,
 		Denominator:              denominator,
 		ClocksPerClick:           clocksPerClick,
