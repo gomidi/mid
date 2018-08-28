@@ -22,14 +22,14 @@ func (w *midiWriter) SetChannel(no uint8 /* 0-15 */) {
 	w.ch = channel.Channel(no)
 }
 
-// ChannelPressure writes a channel pressure message for the current channel
-func (w *midiWriter) ChannelPressure(pressure uint8) error {
-	return w.wr.Write(w.ch.ChannelPressure(pressure))
+// AfterTouch writes a channel pressure message for the current channel
+func (w *midiWriter) AfterTouch(pressure uint8) error {
+	return w.wr.Write(w.ch.AfterTouch(pressure))
 }
 
-// KeyPressure writes a key pressure message for the current channel
-func (w *midiWriter) KeyPressure(key, pressure uint8) error {
-	return w.wr.Write(w.ch.KeyPressure(key, pressure))
+// PolyAfterTouch writes a key pressure message for the current channel
+func (w *midiWriter) PolyAfterTouch(key, pressure uint8) error {
+	return w.wr.Write(w.ch.PolyAfterTouch(key, pressure))
 }
 
 // NoteOff writes a note off message for the current channel

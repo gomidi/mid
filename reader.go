@@ -135,8 +135,8 @@ type Reader struct {
 			// AfterTouch is called for aftertouch messages  (aka "channel pressure")
 			AfterTouch func(p *Position, channel, pressure uint8)
 
-			// PolyphonicAfterTouch is called for polyphonic aftertouch messages (aka "key pressure").
-			PolyphonicAfterTouch func(p *Position, channel, key, pressure uint8)
+			// PolyAfterTouch is called for polyphonic aftertouch messages (aka "key pressure").
+			PolyAfterTouch func(p *Position, channel, key, pressure uint8)
 
 			// ControlChange is called for control change messages
 			ControlChange func(p *Position, channel, controller, value uint8)

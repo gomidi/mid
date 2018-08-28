@@ -108,9 +108,9 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 			r.Message.Channel.PitchBend(r.pos, msg.Channel(), msg.Value())
 		}
 
-	case channel.PolyphonicAfterTouch:
-		if r.Message.Channel.PolyphonicAfterTouch != nil {
-			r.Message.Channel.PolyphonicAfterTouch(r.pos, msg.Channel(), msg.Key(), msg.Pressure())
+	case channel.PolyAfterTouch:
+		if r.Message.Channel.PolyAfterTouch != nil {
+			r.Message.Channel.PolyAfterTouch(r.pos, msg.Channel(), msg.Key(), msg.Pressure())
 		}
 
 	case channel.AfterTouch:
