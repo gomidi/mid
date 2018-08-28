@@ -97,8 +97,10 @@ func (r *Reader) Tempo() uint32 {
 // The gomidi/connect package provides adapters to rtmidi and portaudio
 // that fullfill the InConnection interface.
 func (r *Reader) ReadFrom(in InConnection) {
-	r.resolution = smf.MetricTicks(1920)
+	r.resolution = LiveResolution
 	rd := &inReader{rd: r, in: in}
 	rd.midiReader = midireader.New(&rd.bf, r.dispatchRealTime, r.midiReaderOptions...)
 	rd.in.SetListener(rd.handleMessage)
 }
+
+const LiveResolution = smf.MetricTicks(1920)
