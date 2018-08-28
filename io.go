@@ -103,4 +103,5 @@ func (r *Reader) ReadFrom(in InConnection) {
 	rd.in.SetListener(rd.handleMessage)
 }
 
+// LiveResolution is the resolution used for live over the wire reading with Reader.ReadFrom
 const LiveResolution = smf.MetricTicks(1920)
