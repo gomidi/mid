@@ -98,6 +98,7 @@ func (r *Reader) Tempo() uint32 {
 // that fullfill the InConnection interface.
 func (r *Reader) ReadFrom(in InConnection) {
 	r.resolution = LiveResolution
+	r.reset()
 	rd := &inReader{rd: r, in: in}
 	rd.midiReader = midireader.New(&rd.bf, r.dispatchRealTime, r.midiReaderOptions...)
 	rd.in.SetListener(rd.handleMessage)

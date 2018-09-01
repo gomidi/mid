@@ -21,6 +21,7 @@ import (
 func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 	r.errSMF = nil
 	r.pos = &Position{}
+	r.reset()
 	err := smfreader.ReadFile(file, r.readSMF, options...)
 	if err != nil && err != smf.ErrFinished {
 		return err
@@ -35,6 +36,7 @@ func (r *Reader) ReadSMFFile(file string, options ...smfreader.Option) error {
 func (r *Reader) ReadSMFFileHeader(file string, options ...smfreader.Option) (smf.Header, error) {
 	r.errSMF = nil
 	r.pos = &Position{}
+	r.reset()
 	f, err := os.Open(file)
 	if err != nil {
 		fmt.Printf("can't open file: %v", err)
@@ -70,6 +72,7 @@ func (r *Reader) ReadSMFFileHeader(file string, options ...smfreader.Option) (sm
 func (r *Reader) ReadSMF(src io.Reader, options ...smfreader.Option) error {
 	r.errSMF = nil
 	r.pos = &Position{}
+	r.reset()
 	rd := smfreader.New(src, options...)
 
 	err := rd.ReadHeader()

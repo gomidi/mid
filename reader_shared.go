@@ -11,6 +11,14 @@ import (
 	"github.com/gomidi/midi/smf"
 )
 
+func (r *Reader) reset() {
+	r.tempoChanges = []tempoChange{tempoChange{0, 120}}
+
+	for c := 0; c < 16; c++ {
+		r.channelRPN_NRPN[c] = [4]uint8{0, 0, 0, 0}
+	}
+}
+
 func (r *Reader) saveTempoChange(pos Position, bpm uint32) {
 	r.tempoChanges = append(r.tempoChanges, tempoChange{pos.AbsoluteTicks, bpm})
 }
@@ -58,6 +66,39 @@ func (r *Reader) dispatch(rd midi.Reader) (err error) {
 			return
 		}
 	}
+}
+
+func (r *Reader) _RPN_NRPN_Reset(ch uint8, isRPN bool) {
+	// reset tracking on this channel
+	r.channelRPN_NRPN[ch] = [4]uint8{0, 0, 0, 0}
+
+	if isRPN {
+		if r.Msg.Channel.ControlChange.RPN.Reset != nil {
+			r.Msg.Channel.ControlChange.RPN.Reset(r.pos, ch)
+			return
+		}
+		if r.Msg.Channel.ControlChange.RPN.MSB != nil {
+			r.Msg.Channel.ControlChange.RPN.MSB(r.pos, ch, 127, 127, 0)
+		}
+
+		return
+	}
+
+	if r.Msg.Channel.ControlChange.NRPN.Reset != nil {
+		r.Msg.Channel.ControlChange.NRPN.Reset(r.pos, ch)
+		return
+	}
+	if r.Msg.Channel.ControlChange.NRPN.MSB != nil {
+		r.Msg.Channel.ControlChange.NRPN.MSB(r.pos, ch, 127, 127, 0)
+	}
+
+}
+
+func (r *Reader) sendAsCC(ch, cc, val uint8) error {
+	if r.Msg.Channel.ControlChange.Each != nil {
+		r.Msg.Channel.ControlChange.Each(r.pos, ch, cc, val)
+	}
+	return nil
 }
 
 // dispatchMessage dispatches a single message from the midi.Reader (which might be an smf reader)
@@ -119,8 +160,213 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 		}
 
 	case channel.ControlChange:
-		if r.Msg.Channel.ControlChange != nil {
-			r.Msg.Channel.ControlChange(r.pos, msg.Channel(), msg.Controller(), msg.Value())
+		var (
+			ch  = msg.Channel()
+			val = msg.Value()
+			cc  = msg.Controller()
+		)
+
+		switch cc {
+
+		/*
+			Ok, lets explain the reasoning behind this confusing RPN/NRPN handling a bit.
+			There are the following observations:
+				- a channel can either have a RPN message or a NRPN message at a point in time
+				- the identifiers are sent via CC101 + CC100 for RPN and CC99 + CC98 for NRPN
+			    - the order of the identifier CC messages may vary in reality
+				- the identifiers are sent before the value
+				- the MSB is sent via CC6
+				- the LSB is sent via CC38
+
+			RPN and NRPN are never mixed at the same time on the same channel.
+			We want to always send complete valid RPN/NRPN messages to the callbacks.
+			For this to happen, each identifier is cached and when the MSB arrives and both identifiers are there,
+			the callback is called. If any of the conditions are not met, the callback is not called.
+		*/
+
+		// first identifier of a RPN/NRPN message
+		case 101, 99:
+			if (cc == 101 && r.Msg.Channel.ControlChange.RPN.MSB == nil) || (cc == 99 && r.Msg.Channel.ControlChange.NRPN.MSB == nil) {
+				return r.sendAsCC(ch, cc, val)
+			}
+
+			// RPN reset (127,127)
+			if val+r.channelRPN_NRPN[ch][3] == 2*127 {
+				r._RPN_NRPN_Reset(ch, cc == 101)
+			} else {
+				// register first ident cc
+				r.channelRPN_NRPN[ch][0] = cc
+				// track the first ident value
+				r.channelRPN_NRPN[ch][2] = val
+			}
+
+		// second identifier of a RPN/NRPN message
+		case 100, 98:
+			if (cc == 100 && r.Msg.Channel.ControlChange.RPN.MSB == nil) || (cc == 98 && r.Msg.Channel.ControlChange.NRPN.MSB == nil) {
+				return r.sendAsCC(ch, cc, val)
+			}
+
+			// RPN reset (127,127)
+			if val+r.channelRPN_NRPN[ch][2] == 2*127 {
+				r._RPN_NRPN_Reset(ch, cc == 100)
+			} else {
+				// register second ident cc
+				r.channelRPN_NRPN[ch][1] = cc
+				// track the second ident value
+				r.channelRPN_NRPN[ch][3] = val
+			}
+
+		// the data entry controller
+		case 6:
+			if r.Msg.Channel.ControlChange.RPN.MSB == nil && r.Msg.Channel.ControlChange.NRPN.MSB == nil {
+				return r.sendAsCC(ch, cc, val)
+			}
+			switch {
+
+			// is a valid RPN
+			case r.channelRPN_NRPN[ch][0] == 101 && r.channelRPN_NRPN[ch][1] == 100:
+				if r.Msg.Channel.ControlChange.RPN.MSB != nil {
+					r.Msg.Channel.ControlChange.RPN.MSB(
+						r.pos,
+						ch,
+						r.channelRPN_NRPN[ch][2],
+						r.channelRPN_NRPN[ch][3],
+						val)
+				} else {
+					return r.sendAsCC(ch, cc, val)
+				}
+
+			// is a valid NRPN
+			case r.channelRPN_NRPN[ch][0] == 99 && r.channelRPN_NRPN[ch][1] == 98:
+				if r.Msg.Channel.ControlChange.NRPN.MSB != nil {
+					r.Msg.Channel.ControlChange.NRPN.MSB(
+						r.pos,
+						ch,
+						r.channelRPN_NRPN[ch][2],
+						r.channelRPN_NRPN[ch][3],
+						val)
+				} else {
+					return r.sendAsCC(ch, cc, val)
+				}
+
+			// is no valid RPN/NRPN, send as controller change
+			default:
+				return r.sendAsCC(ch, cc, val)
+			}
+
+		// the lsb
+		case 38:
+			if r.Msg.Channel.ControlChange.RPN.LSB == nil && r.Msg.Channel.ControlChange.NRPN.LSB == nil {
+				return r.sendAsCC(ch, cc, val)
+			}
+
+			switch {
+
+			// is a valid RPN
+			case r.channelRPN_NRPN[ch][0] == 101 && r.channelRPN_NRPN[ch][1] == 100:
+				if r.Msg.Channel.ControlChange.RPN.LSB != nil {
+					r.Msg.Channel.ControlChange.RPN.LSB(
+						r.pos,
+						ch,
+						r.channelRPN_NRPN[ch][2],
+						r.channelRPN_NRPN[ch][3],
+						val)
+				} else {
+					return r.sendAsCC(ch, cc, val)
+				}
+
+			// is a valid NRPN
+			case r.channelRPN_NRPN[ch][0] == 99 && r.channelRPN_NRPN[ch][1] == 98:
+				if r.Msg.Channel.ControlChange.NRPN.LSB != nil {
+					r.Msg.Channel.ControlChange.NRPN.LSB(
+						r.pos,
+						ch,
+						r.channelRPN_NRPN[ch][2],
+						r.channelRPN_NRPN[ch][3],
+						val)
+				} else {
+					return r.sendAsCC(ch, cc, val)
+				}
+
+			// is no valid RPN/NRPN, send as controller change
+			default:
+				return r.sendAsCC(ch, cc, val)
+			}
+
+		// the increment
+		case 96:
+			if r.Msg.Channel.ControlChange.RPN.Increment == nil && r.Msg.Channel.ControlChange.NRPN.Increment == nil {
+				return r.sendAsCC(ch, cc, val)
+			}
+			switch {
+
+			// is a valid RPN
+			case r.channelRPN_NRPN[ch][0] == 101 && r.channelRPN_NRPN[ch][1] == 100:
+				if r.Msg.Channel.ControlChange.RPN.Increment != nil {
+					r.Msg.Channel.ControlChange.RPN.Increment(
+						r.pos,
+						ch,
+						r.channelRPN_NRPN[ch][2],
+						r.channelRPN_NRPN[ch][3])
+				} else {
+					return r.sendAsCC(ch, cc, val)
+				}
+
+			// is a valid NRPN
+			case r.channelRPN_NRPN[ch][0] == 99 && r.channelRPN_NRPN[ch][1] == 98:
+				if r.Msg.Channel.ControlChange.NRPN.Increment != nil {
+					r.Msg.Channel.ControlChange.NRPN.Increment(
+						r.pos,
+						ch,
+						r.channelRPN_NRPN[ch][2],
+						r.channelRPN_NRPN[ch][3])
+				} else {
+					return r.sendAsCC(ch, cc, val)
+				}
+
+			// is no valid RPN/NRPN, send as controller change
+			default:
+				return r.sendAsCC(ch, cc, val)
+			}
+
+		// the decrement
+		case 97:
+			if r.Msg.Channel.ControlChange.RPN.Decrement == nil && r.Msg.Channel.ControlChange.NRPN.Decrement == nil {
+				return r.sendAsCC(ch, cc, val)
+			}
+			switch {
+
+			// is a valid RPN
+			case r.channelRPN_NRPN[ch][0] == 101 && r.channelRPN_NRPN[ch][1] == 100:
+				if r.Msg.Channel.ControlChange.RPN.Decrement != nil {
+					r.Msg.Channel.ControlChange.RPN.Decrement(
+						r.pos,
+						ch,
+						r.channelRPN_NRPN[ch][2],
+						r.channelRPN_NRPN[ch][3])
+				} else {
+					return r.sendAsCC(ch, cc, val)
+				}
+
+			// is a valid NRPN
+			case r.channelRPN_NRPN[ch][0] == 99 && r.channelRPN_NRPN[ch][1] == 98:
+				if r.Msg.Channel.ControlChange.NRPN.Decrement != nil {
+					r.Msg.Channel.ControlChange.NRPN.Decrement(
+						r.pos,
+						ch,
+						r.channelRPN_NRPN[ch][2],
+						r.channelRPN_NRPN[ch][3])
+				} else {
+					return r.sendAsCC(ch, cc, val)
+				}
+
+			// is no valid RPN/NRPN, send as controller change
+			default:
+				return r.sendAsCC(ch, cc, val)
+			}
+
+		default:
+			return r.sendAsCC(ch, cc, val)
 		}
 
 	case meta.SMPTE:

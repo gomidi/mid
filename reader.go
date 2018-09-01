@@ -40,6 +40,8 @@ type Reader struct {
 	clockmx           sync.Mutex // protect the midiClocks
 	ignoreMIDIClock   bool
 
+	channelRPN_NRPN [16][4]uint8 // channel -> [cc0,cc1,valcc0,valcc1], initial value [-1,-1,-1,-1]
+
 	// ticks per quarternote
 	resolution smf.MetricTicks
 
@@ -140,8 +142,54 @@ type Reader struct {
 			// PolyAftertouch is called for polyphonic aftertouch messages (aka "key pressure").
 			PolyAftertouch func(p *Position, channel, key, pressure uint8)
 
-			// ControlChange is called for control change messages
-			ControlChange func(p *Position, channel, controller, value uint8)
+			// ControlChange deals with control change messages
+			ControlChange struct {
+
+				// Each is called for every control change message
+				// If RPN or NRPN callbacks are defined, the corresponding control change messages will not
+				// be passed to each and the corrsponding RPN/NRPN callback are called.
+				Each func(p *Position, channel, controller, value uint8)
+
+				// RPN deals with Registered Program Numbers (RPN) and their values.
+				// If the callbacks are set, the corresponding control change messages will not be passed of ControlChange.Each.
+				RPN struct {
+
+					// MSB is called, when the MSB of a RPN arrives
+					MSB func(p *Position, channel, typ1, typ2, msbVal uint8)
+
+					// LSB is called, when the MSB of a RPN arrives
+					LSB func(p *Position, channel, typ1, typ2, lsbVal uint8)
+
+					// Increment is called, when the increment of a RPN arrives
+					Increment func(p *Position, channel, typ1, typ2 uint8)
+
+					// Decrement is called, when the decrement of a RPN arrives
+					Decrement func(p *Position, channel, typ1, typ2 uint8)
+
+					// Reset is called, when the reset or null RPN arrives
+					Reset func(p *Position, channel uint8)
+				}
+
+				// NRPN deals with Non-Registered Program Numbers (NRPN) and their values.
+				// If the callbacks are set, the corresponding control change messages will not be passed of ControlChange.Each.
+				NRPN struct {
+
+					// MSB is called, when the MSB of a NRPN arrives
+					MSB func(p *Position, channel uint8, typ1, typ2, msbVal uint8)
+
+					// LSB is called, when the LSB of a NRPN arrives
+					LSB func(p *Position, channel uint8, typ1, typ2, msbVal uint8)
+
+					// Increment is called, when the increment of a NRPN arrives
+					Increment func(p *Position, channel, typ1, typ2 uint8)
+
+					// Decrement is called, when the decrement of a NRPN arrives
+					Decrement func(p *Position, channel, typ1, typ2 uint8)
+
+					// Reset is called, when the reset or null NRPN arrives
+					Reset func(p *Position, channel uint8)
+				}
+			}
 		}
 
 		// Realtime provides callbacks for realtime messages.
@@ -216,10 +264,6 @@ func NewReader(opts ...ReaderOption) *Reader {
 
 	for _, opt := range opts {
 		opt(h)
-	}
-
-	if len(h.tempoChanges) == 0 {
-		h.tempoChanges = append(h.tempoChanges, tempoChange{0, 120})
 	}
 
 	return h

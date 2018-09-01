@@ -21,6 +21,7 @@ import (
 // For more infomation about dealing with the MIDI messages, see Reader.
 func (r *Reader) Read(src io.Reader) (err error) {
 	r.pos = nil
+	r.reset()
 	rd := midireader.New(src, r.dispatchRealTime, r.midiReaderOptions...)
 	return r.dispatch(rd)
 }
