@@ -4,37 +4,14 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/gomidi/connect"
 	"github.com/gomidi/midi"
 	"github.com/gomidi/midi/midireader"
 	"github.com/gomidi/midi/smf"
 )
 
-// InConnection is an interface for external/over the wire MIDI input connections.
-// The gomidi/connect package provides adapters to rtmidi and portaudio
-// that fullfill the InConnection interface.
-type InConnection interface {
-
-	// SetListener sets the callback function that is called when data arrives
-	// println(big.NewRat(math.MaxInt64,1000 /* milliseonds */ *1000 /* seconds */ *60 /* minutes */ *60 /* hours */ *24 /* days */ *365 /* years */).FloatString(0))
-	// output: 292471
-	// => a ascending timestamp based on microseconds would wrap after 292471 years
-	SetListener(func(data []byte, deltaMicroseconds int64))
-
-	// StopListening stops the listening
-	StopListening()
-}
-
-// OutConnection is an interface for external/over the wire MIDI output connections.
-// The gomidi/connect package provides adapters to rtmidi and portaudio
-// that fullfill the OutConnection interface.
-type OutConnection interface {
-
-	// Send sends the given MIDI bytes over the wire.
-	Send([]byte) error
-}
-
 type outWriter struct {
-	out OutConnection
+	out connect.Out
 }
 
 func (w *outWriter) Write(b []byte) (int, error) {
@@ -44,13 +21,13 @@ func (w *outWriter) Write(b []byte) (int, error) {
 // WriteTo returns a Writer that writes to the given MIDI out connection.
 // The gomidi/connect package provides adapters to rtmidi and portaudio
 // that fullfill the OutConnection interface.
-func WriteTo(out OutConnection) *Writer {
+func WriteTo(out connect.Out) *Writer {
 	return NewWriter(&outWriter{out})
 }
 
 type inReader struct {
 	rd         *Reader
-	in         InConnection
+	in         connect.In
 	midiReader midi.Reader
 	bf         bytes.Buffer
 }
@@ -96,12 +73,12 @@ func (r *Reader) Tempo() uint32 {
 // ReadFrom configures the Reader to read from to the given MIDI in connection.
 // The gomidi/connect package provides adapters to rtmidi and portaudio
 // that fullfill the InConnection interface.
-func (r *Reader) ReadFrom(in InConnection) {
+func (r *Reader) ReadFrom(in connect.In) error {
 	r.resolution = LiveResolution
 	r.reset()
 	rd := &inReader{rd: r, in: in}
 	rd.midiReader = midireader.New(&rd.bf, r.dispatchRealTime, r.midiReaderOptions...)
-	rd.in.SetListener(rd.handleMessage)
+	return rd.in.SetListener(rd.handleMessage)
 }
 
 // LiveResolution is the resolution used for live over the wire reading with Reader.ReadFrom
