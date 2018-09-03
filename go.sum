@@ -6,3 +6,5 @@ github.com/gomidi/connect v0.10.0 h1:8oym4O321D4hbN/DW4NwEDpF5P0IuMK3JZThc/Y1SDA
 github.com/gomidi/connect v0.10.0/go.mod h1:zu6PoN7Xs/37thtXZ+4Wl1MMg8MxenS7U/M3rn6trNo=
 github.com/gomidi/midi v1.4.1 h1:eRaiAALXTnzffQu8ShfaT7ZoINRHwK+yubgpGb8RA2c=
 github.com/gomidi/midi v1.4.1/go.mod h1:B16DbgtsXSbQK9Q75aVezVL6VGhaK+2CVe/ybwUUCHE=
+github.com/gomidi/midi v1.4.2 h1:vU5m8n5iJjDEF8pqEcox/6Jw2IBHACtR30EBc0IyQls=
+github.com/gomidi/midi v1.4.2/go.mod h1:B16DbgtsXSbQK9Q75aVezVL6VGhaK+2CVe/ybwUUCHE=
