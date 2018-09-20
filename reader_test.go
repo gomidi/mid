@@ -345,8 +345,8 @@ func TestTimeAt(t *testing.T) {
 	twobars := mt.Ticks4th() * 8
 
 	tests := []struct {
-		tempo1          uint32
-		tempo2          uint32
+		tempo1          float64
+		tempo2          float64
 		absPos          uint32
 		durationSeconds int64
 	}{
@@ -370,9 +370,9 @@ func TestTimeAt(t *testing.T) {
 		var bf bytes.Buffer
 
 		wr := NewSMF(&bf, 1, smfwriter.TimeFormat(mt))
-		wr.Tempo(test.tempo1)
+		wr.TempoBPM(test.tempo1)
 		wr.SetDelta(twobars)
-		wr.Tempo(test.tempo2)
+		wr.TempoBPM(test.tempo2)
 		wr.SetDelta(twobars)
 		wr.SetDelta(twobars * 8)
 		wr.NoteOn(64, 120)

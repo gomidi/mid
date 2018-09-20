@@ -19,7 +19,7 @@ func (r *Reader) reset() {
 	}
 }
 
-func (r *Reader) saveTempoChange(pos Position, bpm uint32) {
+func (r *Reader) saveTempoChange(pos Position, bpm float64) {
 	r.tempoChanges = append(r.tempoChanges, tempoChange{pos.AbsoluteTicks, bpm})
 }
 
@@ -375,9 +375,9 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 		}
 
 	case meta.Tempo:
-		r.saveTempoChange(*r.pos, msg.BPM())
-		if r.Msg.Meta.Tempo != nil {
-			r.Msg.Meta.Tempo(*r.pos, msg.BPM())
+		r.saveTempoChange(*r.pos, msg.FractionalBPM())
+		if r.Msg.Meta.TempoBPM != nil {
+			r.Msg.Meta.TempoBPM(*r.pos, msg.FractionalBPM())
 		}
 
 	case meta.TimeSig:
@@ -539,9 +539,9 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 
 type tempoChange struct {
 	absTicks uint64
-	bpm      uint32
+	bpm      float64
 }
 
-func calcDeltaTime(mt smf.MetricTicks, deltaTicks uint32, bpm uint32) time.Duration {
-	return mt.Duration(bpm, deltaTicks)
+func calcDeltaTime(mt smf.MetricTicks, deltaTicks uint32, bpm float64) time.Duration {
+	return mt.FractionalDuration(bpm, deltaTicks)
 }

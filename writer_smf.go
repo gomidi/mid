@@ -114,13 +114,13 @@ func (w *SMFWriter) Device(port string) error {
 
 // KeySig writes the key signature meta message.
 // A more comfortable way is to use the Key method in conjunction
-// with the midimessage/meta/key package
+// with the gomidi/midi/midimessage/meta/key package
 func (w *SMFWriter) KeySig(key uint8, ismajor bool, num uint8, isflat bool) error {
 	return w.wr.Write(meta.Key{Key: key, IsMajor: ismajor, Num: num, IsFlat: isflat})
 }
 
 // Key writes the given key signature meta message.
-// It is supposed to be used with the midimessage/meta/key package
+// It is supposed to be used with the gomidi/midi/midimessage/meta/key package
 func (w *SMFWriter) Key(keysig meta.Key) error {
 	return w.wr.Write(keysig)
 }
@@ -177,8 +177,8 @@ func (w *SMFWriter) SMPTE(hour, minute, second, frame, fractionalFrame byte) err
 }
 
 // Tempo writes the tempo meta message
-func (w *SMFWriter) Tempo(bpm uint32) error {
-	return w.wr.Write(meta.Tempo(bpm))
+func (w *SMFWriter) TempoBPM(bpm float64) error {
+	return w.wr.Write(meta.FractionalBPM(bpm))
 }
 
 // Text writes the text meta message

@@ -63,8 +63,8 @@ type Reader struct {
 			// Copyright is called for the copyright message
 			Copyright func(p Position, text string)
 
-			// Tempo is called for the tempo (change) message
-			Tempo func(p Position, bpm uint32)
+			// TempoBPM is called for the tempo (change) message, BPM is fractional
+			TempoBPM func(p Position, bpm float64)
 
 			// TimeSigis called for the time signature (change) message
 			TimeSig func(p Position, num, denom uint8)

@@ -13,7 +13,7 @@ import (
 func makeSMF() io.Reader {
 	var bf bytes.Buffer
 	wr := NewSMF(&bf, 1 /* number of tracks */)
-	wr.Tempo(160 /* beats per minute */)
+	wr.TempoBPM(160 /* beats per minute */)
 	wr.SetChannel(2 /* valid: 0-15 */)
 	wr.NoteOn(65 /* key */, 90 /* velocity */)
 	wr.SetDelta(4000 /* ticks */)
@@ -29,7 +29,7 @@ func roundSec(d time.Duration) time.Duration {
 
 type example struct {
 	ticks smf.MetricTicks
-	bpm   uint32
+	bpm   float64
 	start time.Time
 }
 
@@ -40,7 +40,7 @@ func (e *example) SMFHeader(head smf.Header) {
 }
 
 // Tempo tracks a tempo change
-func (e *example) Tempo(p Position, bpm uint32) {
+func (e *example) TempoBPM(p Position, bpm float64) {
 	e.bpm = bpm
 }
 
@@ -70,7 +70,7 @@ func (e *example) calcDuration(p *Position) (dur time.Duration) {
 	// to make it easy, we ignore the possibility that tempo information may be in another track
 	// that is read after this track (the SMF spec recommends to write tempo changes to the first track)
 	// however, since makeSMF just creates one track, we are safe
-	return roundSec(e.ticks.Duration(e.bpm, uint32(p.AbsoluteTicks)))
+	return roundSec(e.ticks.FractionalDuration(e.bpm, uint32(p.AbsoluteTicks)))
 }
 
 func Example() {
@@ -84,7 +84,7 @@ func Example() {
 
 	// setup the callbacks
 	rd.SMFHeader = ex.SMFHeader
-	rd.Msg.Meta.Tempo = ex.Tempo
+	rd.Msg.Meta.TempoBPM = ex.TempoBPM
 	rd.Msg.Channel.NoteOn = ex.NoteOn
 	rd.Msg.Channel.NoteOff = ex.NoteOff
 

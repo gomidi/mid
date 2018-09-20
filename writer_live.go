@@ -59,8 +59,8 @@ func (w *Writer) Tick() error {
 	return w.midiWriter.wr.Write(realtime.Tick)
 }
 
-// TimingClock writes the timing clock realtime message
-func (w *Writer) TimingClock() error {
+// Clock writes the timing clock realtime message
+func (w *Writer) Clock() error {
 	return w.midiWriter.wr.Write(realtime.TimingClock)
 }
 

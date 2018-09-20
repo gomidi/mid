@@ -27,7 +27,7 @@ func TestCalcTempoBasedOnMIDIClocks(t *testing.T) {
 		b        time.Time
 		c        time.Time
 		d        time.Time
-		expected uint32
+		expected float64
 	}{
 		{now, now.Add(clock(120)), now.Add(clock(120)).Add(clock(120)), now.Add(clock(120)).Add(clock(120)).Add(clock(120)), 120},
 		{now, now.Add(clock(130)), now.Add(clock(130)).Add(clock(130)), now.Add(clock(130)).Add(clock(130)).Add(clock(130)), 130},

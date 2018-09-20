@@ -43,7 +43,7 @@ func (r *inReader) handleMessage(b []byte, deltaMicroseconds int64) {
 
 // Duration returns the duration for the given delta ticks, respecting the current tempo
 func (r *Reader) Duration(deltaticks uint32) time.Duration {
-	return r.resolution.Duration(r.Tempo(), deltaticks)
+	return r.resolution.FractionalDuration(r.TempoBPM(), deltaticks)
 }
 
 // Resolution returns the ticks of a quarternote
@@ -61,11 +61,19 @@ func (r *Reader) Ticks(d time.Duration) uint32 {
 	if r.resolution == 0 {
 		return 0
 	}
-	return r.resolution.Ticks(r.Tempo(), d)
+	return r.resolution.FractionalTicks(r.TempoBPM(), d)
 }
 
+/*
 // Tempo returns the current tempo in BPM (beats per minute)
 func (r *Reader) Tempo() uint32 {
+	tempochange := r.tempoChanges[len(r.tempoChanges)-1]
+	return tempochange.bpm
+}
+*/
+
+// BPM returns the current tempo in BPM (beats per minute)
+func (r *Reader) TempoBPM() float64 {
 	tempochange := r.tempoChanges[len(r.tempoChanges)-1]
 	return tempochange.bpm
 }

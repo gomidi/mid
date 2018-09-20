@@ -79,8 +79,8 @@ func (r *Reader) dispatchRealTime(m realtime.Message) {
 		r.clockmx.Unlock()
 
 		r.saveTempoChange(*r.pos, bpm)
-		if r.Msg.Meta.Tempo != nil {
-			r.Msg.Meta.Tempo(*r.pos, bpm)
+		if r.Msg.Meta.TempoBPM != nil {
+			r.Msg.Meta.TempoBPM(*r.pos, bpm)
 		}
 
 		return
