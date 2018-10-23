@@ -101,6 +101,18 @@ func (r *Reader) sendAsCC(ch, cc, val uint8) error {
 	return nil
 }
 
+func (r *Reader) hasRPNCallback() bool {
+	return !(r.Msg.Channel.ControlChange.RPN.MSB == nil && r.Msg.Channel.ControlChange.RPN.LSB == nil)
+}
+
+func (r *Reader) hasNRPNCallback() bool {
+	return !(r.Msg.Channel.ControlChange.NRPN.MSB == nil && r.Msg.Channel.ControlChange.NRPN.LSB == nil)
+}
+
+func (r *Reader) hasNoRPNorNRPNCallback() bool {
+	return !r.hasRPNCallback() && !r.hasNRPNCallback()
+}
+
 // dispatchMessage dispatches a single message from the midi.Reader (which might be an smf reader)
 // for realtime reading, the passed *SMFPosition is nil
 func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
@@ -186,7 +198,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 
 		// first identifier of a RPN/NRPN message
 		case 101, 99:
-			if (cc == 101 && r.Msg.Channel.ControlChange.RPN.MSB == nil) || (cc == 99 && r.Msg.Channel.ControlChange.NRPN.MSB == nil) {
+			if (cc == 101 && !r.hasRPNCallback()) ||
+				(cc == 99 && !r.hasNRPNCallback()) {
 				return r.sendAsCC(ch, cc, val)
 			}
 
@@ -202,7 +215,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 
 		// second identifier of a RPN/NRPN message
 		case 100, 98:
-			if (cc == 100 && r.Msg.Channel.ControlChange.RPN.MSB == nil) || (cc == 98 && r.Msg.Channel.ControlChange.NRPN.MSB == nil) {
+			if (cc == 100 && !r.hasRPNCallback()) ||
+				(cc == 98 && !r.hasNRPNCallback()) {
 				return r.sendAsCC(ch, cc, val)
 			}
 
@@ -218,7 +232,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 
 		// the data entry controller
 		case 6:
-			if r.Msg.Channel.ControlChange.RPN.MSB == nil && r.Msg.Channel.ControlChange.NRPN.MSB == nil {
+			if r.hasNoRPNorNRPNCallback() {
+				println("early return on cc6")
 				return r.sendAsCC(ch, cc, val)
 			}
 			switch {
@@ -232,9 +247,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 						r.channelRPN_NRPN[ch][2],
 						r.channelRPN_NRPN[ch][3],
 						val)
-				} else {
-					return r.sendAsCC(ch, cc, val)
 				}
+				return
 
 			// is a valid NRPN
 			case r.channelRPN_NRPN[ch][0] == 99 && r.channelRPN_NRPN[ch][1] == 98:
@@ -245,18 +259,18 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 						r.channelRPN_NRPN[ch][2],
 						r.channelRPN_NRPN[ch][3],
 						val)
-				} else {
-					return r.sendAsCC(ch, cc, val)
 				}
+				return
 
 			// is no valid RPN/NRPN, send as controller change
 			default:
+				//				println("invalid RPN/NRPN on cc6")
 				return r.sendAsCC(ch, cc, val)
 			}
 
 		// the lsb
 		case 38:
-			if r.Msg.Channel.ControlChange.RPN.LSB == nil && r.Msg.Channel.ControlChange.NRPN.LSB == nil {
+			if r.hasNoRPNorNRPNCallback() {
 				return r.sendAsCC(ch, cc, val)
 			}
 
@@ -271,9 +285,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 						r.channelRPN_NRPN[ch][2],
 						r.channelRPN_NRPN[ch][3],
 						val)
-				} else {
-					return r.sendAsCC(ch, cc, val)
 				}
+				return
 
 			// is a valid NRPN
 			case r.channelRPN_NRPN[ch][0] == 99 && r.channelRPN_NRPN[ch][1] == 98:
@@ -284,9 +297,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 						r.channelRPN_NRPN[ch][2],
 						r.channelRPN_NRPN[ch][3],
 						val)
-				} else {
-					return r.sendAsCC(ch, cc, val)
 				}
+				return
 
 			// is no valid RPN/NRPN, send as controller change
 			default:
@@ -308,9 +320,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 						ch,
 						r.channelRPN_NRPN[ch][2],
 						r.channelRPN_NRPN[ch][3])
-				} else {
-					return r.sendAsCC(ch, cc, val)
 				}
+				return
 
 			// is a valid NRPN
 			case r.channelRPN_NRPN[ch][0] == 99 && r.channelRPN_NRPN[ch][1] == 98:
@@ -320,9 +331,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 						ch,
 						r.channelRPN_NRPN[ch][2],
 						r.channelRPN_NRPN[ch][3])
-				} else {
-					return r.sendAsCC(ch, cc, val)
 				}
+				return
 
 			// is no valid RPN/NRPN, send as controller change
 			default:
@@ -344,9 +354,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 						ch,
 						r.channelRPN_NRPN[ch][2],
 						r.channelRPN_NRPN[ch][3])
-				} else {
-					return r.sendAsCC(ch, cc, val)
 				}
+				return
 
 			// is a valid NRPN
 			case r.channelRPN_NRPN[ch][0] == 99 && r.channelRPN_NRPN[ch][1] == 98:
@@ -356,9 +365,8 @@ func (r *Reader) dispatchMessage(rd midi.Reader) (err error) {
 						ch,
 						r.channelRPN_NRPN[ch][2],
 						r.channelRPN_NRPN[ch][3])
-				} else {
-					return r.sendAsCC(ch, cc, val)
 				}
+				return
 
 			// is no valid RPN/NRPN, send as controller change
 			default:

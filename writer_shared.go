@@ -148,16 +148,12 @@ func (w *midiWriter) ResetRPN() error {
 }
 
 // RPN message consisting of a val101 and val100 to identify the RPN and a msb and lsb for the value
-// (lsb may be set to 0, if resolution is coarse)
 func (w *midiWriter) RPN(val101, val100, msbVal, lsbVal uint8) error {
 	msgs := append([]midi.Message{},
 		w.ch.ControlChange(101, val101),
 		w.ch.ControlChange(100, val100),
-		w.ch.ControlChange(6, msbVal))
-
-	if lsbVal != 0 {
-		msgs = append(msgs, w.ch.ControlChange(38, lsbVal))
-	}
+		w.ch.ControlChange(6, msbVal),
+		w.ch.ControlChange(38, lsbVal))
 
 	for _, msg := range msgs {
 		err := w.wr.Write(msg)
@@ -232,16 +228,12 @@ func (w *midiWriter) NRPNDecrement(val99, val98 uint8) error {
 }
 
 // NRPN message consisting of a val99 and val98 to identify the RPN and a msb and lsb for the value
-// (lsb may be set to 0, if resolution is coarse)
 func (w *midiWriter) NRPN(val99, val98, msbVal, lsbVal uint8) error {
 	msgs := append([]midi.Message{},
 		w.ch.ControlChange(99, val99),
 		w.ch.ControlChange(98, val98),
-		w.ch.ControlChange(6, msbVal))
-
-	if lsbVal != 0 {
-		msgs = append(msgs, w.ch.ControlChange(38, lsbVal))
-	}
+		w.ch.ControlChange(6, msbVal),
+		w.ch.ControlChange(38, lsbVal))
 
 	for _, msg := range msgs {
 		err := w.wr.Write(msg)

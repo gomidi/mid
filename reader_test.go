@@ -16,6 +16,262 @@ func msgs(m ...midi.Message) []midi.Message {
 	return m
 }
 
+func TestRPN_NRPN_JustLSBCallback(t *testing.T) {
+	tests := []struct {
+		write       func(w *Writer)
+		description string
+		expected    string
+	}{
+		// RPN
+		{
+			func(w *Writer) { w.RPN(0, 0, 23, 0) },
+			"simple RPN without LSB",
+			"RPN(0,0) LSB on channel 0: 0 | ",
+		},
+		{
+			func(w *Writer) { w.SetChannel(1); w.RPN(0, 0, 23, 0) },
+			"simple RPN without LSB channel 1",
+			"RPN(0,0) LSB on channel 1: 0 | ",
+		},
+		{
+			func(w *Writer) { w.RPN(1, 1, 43, 54) },
+			"simple RPN with LSB",
+			"RPN(1,1) LSB on channel 0: 54 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(101, 2))
+				w.Write(channel.Channel0.ControlChange(100, 1))
+				w.Write(channel.Channel0.ControlChange(6, 13))
+			},
+			"simple RPN without LSB and without reset",
+			"",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(100, 1))
+				w.Write(channel.Channel0.ControlChange(101, 2))
+				w.Write(channel.Channel0.ControlChange(6, 13))
+			},
+			"simple RPN (reverse order) without LSB and without reset",
+			"",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(101, 2))
+				w.Write(channel.Channel0.ControlChange(100, 1))
+				w.Write(channel.Channel0.ControlChange(6, 13))
+				w.Write(channel.Channel0.ControlChange(6, 53))
+			},
+			"RPN without LSB and without reset and with two MSB values",
+			"",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(101, 2))
+				w.Write(channel.Channel0.ControlChange(100, 1))
+				w.Write(channel.Channel0.ControlChange(6, 13))
+				w.Write(channel.Channel0.ControlChange(38, 53))
+				w.Write(channel.Channel0.ControlChange(6, 23))
+			},
+			"RPN without reset and with a MSB followed by a LSB, followed by a MSB values",
+			"RPN(2,1) LSB on channel 0: 53 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(6, 13))
+			},
+			"CC6 value without preceding RPN/NRPN definition",
+			"CC6 on channel 0: 13 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel1.ControlChange(38, 13))
+			},
+			"CC38 value without preceding RPN/NRPN definition",
+			"CC38 on channel 1: 13 | ",
+		},
+		{
+			func(w *Writer) {
+				w.RPN(1, 2, 23, 0)
+				w.Write(channel.Channel0.ControlChange(6, 13))
+			},
+			"CC6 value after RPN and reset",
+			"RPN(1,2) LSB on channel 0: 0 | CC6 on channel 0: 13 | ",
+		},
+		{
+			func(w *Writer) {
+				w.RPN(1, 2, 23, 0)
+				w.Write(channel.Channel0.ControlChange(38, 13))
+			},
+			"CC38 value after RPN and reset",
+			"RPN(1,2) LSB on channel 0: 0 | CC38 on channel 0: 13 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel2.ControlChange(101, 2))
+				w.Write(channel.Channel2.ControlChange(100, 1))
+				w.Write(channel.Channel1.ControlChange(6, 13))
+				w.Write(channel.Channel2.ControlChange(6, 23))
+			},
+			"CC6 value on channel 1 without preceding RPN and on channel 2 with precedding RPN",
+			"CC6 on channel 1: 13 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel2.ControlChange(101, 2))
+				w.Write(channel.Channel2.ControlChange(100, 1))
+				w.Write(channel.Channel2.ControlChange(6, 23))
+				w.Write(channel.Channel1.ControlChange(6, 13))
+				w.Write(channel.Channel2.ControlChange(38, 43))
+			},
+			"CC6 value on channel 1 without preceding RPN and on channel 2 with precedding RPN and LSB",
+			"CC6 on channel 1: 13 | RPN(2,1) LSB on channel 2: 43 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel2.ControlChange(101, 2))
+				w.Write(channel.Channel2.ControlChange(98, 1))
+				w.Write(channel.Channel2.ControlChange(6, 23))
+			},
+			"wrong RPN message, followed by a CC6 value on channel 2",
+			"CC6 on channel 2: 23 | ",
+		},
+
+		// NRPN
+		{
+			func(w *Writer) { w.NRPN(0, 0, 23, 0) },
+			"simple NRPN without LSB",
+			"NRPN(0,0) LSB on channel 0: 0 | ",
+		},
+		{
+			func(w *Writer) { w.SetChannel(1); w.NRPN(0, 0, 23, 0) },
+			"simple NRPN without LSB channel 1",
+			"NRPN(0,0) LSB on channel 1: 0 | ",
+		},
+		{
+			func(w *Writer) { w.NRPN(1, 1, 43, 54) },
+			"simple NRPN with LSB",
+			"NRPN(1,1) LSB on channel 0: 54 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(99, 2))
+				w.Write(channel.Channel0.ControlChange(98, 1))
+				w.Write(channel.Channel0.ControlChange(6, 13))
+			},
+			"simple NRPN without LSB and without reset",
+			"",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(98, 1))
+				w.Write(channel.Channel0.ControlChange(99, 2))
+				w.Write(channel.Channel0.ControlChange(6, 13))
+			},
+			"simple NRPN (reverse order) without LSB and without reset",
+			"",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(99, 2))
+				w.Write(channel.Channel0.ControlChange(98, 1))
+				w.Write(channel.Channel0.ControlChange(6, 13))
+				w.Write(channel.Channel0.ControlChange(6, 53))
+			},
+			"NRPN without LSB and without reset and with two MSB values",
+			"",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel0.ControlChange(99, 2))
+				w.Write(channel.Channel0.ControlChange(98, 1))
+				w.Write(channel.Channel0.ControlChange(6, 13))
+				w.Write(channel.Channel0.ControlChange(38, 53))
+				w.Write(channel.Channel0.ControlChange(6, 23))
+			},
+			"NRPN without reset and with a MSB followed by a LSB, followed by a MSB values",
+			"NRPN(2,1) LSB on channel 0: 53 | ",
+		},
+		{
+			func(w *Writer) {
+				w.NRPN(1, 2, 23, 0)
+				w.Write(channel.Channel0.ControlChange(6, 13))
+			},
+			"CC6 value after NRPN and reset",
+			"NRPN(1,2) LSB on channel 0: 0 | CC6 on channel 0: 13 | ",
+		},
+		{
+			func(w *Writer) {
+				w.NRPN(1, 2, 23, 0)
+				w.Write(channel.Channel0.ControlChange(38, 13))
+			},
+			"CC38 value after NRPN and reset",
+			"NRPN(1,2) LSB on channel 0: 0 | CC38 on channel 0: 13 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel2.ControlChange(99, 2))
+				w.Write(channel.Channel2.ControlChange(98, 1))
+				w.Write(channel.Channel1.ControlChange(6, 13))
+				w.Write(channel.Channel2.ControlChange(6, 23))
+			},
+			"CC6 value on channel 1 without preceding NRPN and on channel 2 with precedding NRPN",
+			"CC6 on channel 1: 13 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel2.ControlChange(99, 2))
+				w.Write(channel.Channel2.ControlChange(98, 1))
+				w.Write(channel.Channel2.ControlChange(6, 23))
+				w.Write(channel.Channel1.ControlChange(6, 13))
+				w.Write(channel.Channel2.ControlChange(38, 43))
+			},
+			"CC6 value on channel 1 without preceding NRPN and on channel 2 with precedding NRPN and LSB",
+			"CC6 on channel 1: 13 | NRPN(2,1) LSB on channel 2: 43 | ",
+		},
+		{
+			func(w *Writer) {
+				w.Write(channel.Channel2.ControlChange(99, 2))
+				w.Write(channel.Channel2.ControlChange(100, 1))
+				w.Write(channel.Channel2.ControlChange(6, 23))
+			},
+			"wrong NRPN message, followed by a CC6 value on channel 2",
+			"CC6 on channel 2: 23 | ",
+		},
+	}
+
+	for _, test := range tests {
+		var bf bytes.Buffer
+		var out bytes.Buffer
+
+		rd := NewReader(NoLogger())
+
+		rd.Msg.Channel.ControlChange.Each = func(p *Position, ch, cc, val uint8) {
+			fmt.Fprintf(&out, "CC%v on channel %v: %v | ", cc, ch, val)
+		}
+
+		rd.Msg.Channel.ControlChange.RPN.LSB = func(p *Position, ch, ident1, ident2, lsb uint8) {
+			fmt.Fprintf(&out, "RPN(%v,%v) LSB on channel %v: %v | ", ident1, ident2, ch, lsb)
+		}
+
+		rd.Msg.Channel.ControlChange.NRPN.LSB = func(p *Position, ch, ident1, ident2, lsb uint8) {
+			fmt.Fprintf(&out, "NRPN(%v,%v) LSB on channel %v: %v | ", ident1, ident2, ch, lsb)
+		}
+
+		wr := NewWriter(&bf)
+		test.write(wr)
+
+		rd.Read(&bf)
+
+		if got, want := out.String(), test.expected; got != want {
+			t.Errorf("%#v\n\tgot  %#v\n\twant %#v", test.description, got, want)
+		}
+
+	}
+
+}
+
 func TestRPN_NRPN(t *testing.T) {
 	tests := []struct {
 		write       func(w *Writer)
@@ -26,12 +282,12 @@ func TestRPN_NRPN(t *testing.T) {
 		{
 			func(w *Writer) { w.RPN(0, 0, 23, 0) },
 			"simple RPN without LSB",
-			"RPN(0,0) on channel 0 MSB 23 | RPN RESET on channel 0 | ",
+			"RPN(0,0) on channel 0 MSB 23 | RPN(0,0) LSB on channel 0: 0 | RPN RESET on channel 0 | ",
 		},
 		{
 			func(w *Writer) { w.SetChannel(1); w.RPN(0, 0, 23, 0) },
 			"simple RPN without LSB channel 1",
-			"RPN(0,0) on channel 1 MSB 23 | RPN RESET on channel 1 | ",
+			"RPN(0,0) on channel 1 MSB 23 | RPN(0,0) LSB on channel 1: 0 | RPN RESET on channel 1 | ",
 		},
 		{
 			func(w *Writer) { w.RPN(1, 1, 43, 54) },
@@ -115,7 +371,7 @@ func TestRPN_NRPN(t *testing.T) {
 				w.Write(channel.Channel0.ControlChange(6, 13))
 			},
 			"CC6 value after RPN and reset",
-			"RPN(1,2) on channel 0 MSB 23 | RPN RESET on channel 0 | CC6 on channel 0: 13 | ",
+			"RPN(1,2) on channel 0 MSB 23 | RPN(1,2) LSB on channel 0: 0 | RPN RESET on channel 0 | CC6 on channel 0: 13 | ",
 		},
 		{
 			func(w *Writer) {
@@ -123,7 +379,7 @@ func TestRPN_NRPN(t *testing.T) {
 				w.Write(channel.Channel0.ControlChange(38, 13))
 			},
 			"CC38 value after RPN and reset",
-			"RPN(1,2) on channel 0 MSB 23 | RPN RESET on channel 0 | CC38 on channel 0: 13 | ",
+			"RPN(1,2) on channel 0 MSB 23 | RPN(1,2) LSB on channel 0: 0 | RPN RESET on channel 0 | CC38 on channel 0: 13 | ",
 		},
 		{
 			func(w *Writer) {
@@ -160,12 +416,12 @@ func TestRPN_NRPN(t *testing.T) {
 		{
 			func(w *Writer) { w.NRPN(0, 0, 23, 0) },
 			"simple NRPN without LSB",
-			"NRPN(0,0) on channel 0 MSB 23 | NRPN RESET on channel 0 | ",
+			"NRPN(0,0) on channel 0 MSB 23 | NRPN(0,0) LSB on channel 0: 0 | NRPN RESET on channel 0 | ",
 		},
 		{
 			func(w *Writer) { w.SetChannel(1); w.NRPN(0, 0, 23, 0) },
 			"simple NRPN without LSB channel 1",
-			"NRPN(0,0) on channel 1 MSB 23 | NRPN RESET on channel 1 | ",
+			"NRPN(0,0) on channel 1 MSB 23 | NRPN(0,0) LSB on channel 1: 0 | NRPN RESET on channel 1 | ",
 		},
 		{
 			func(w *Writer) { w.NRPN(1, 1, 43, 54) },
@@ -235,7 +491,7 @@ func TestRPN_NRPN(t *testing.T) {
 				w.Write(channel.Channel0.ControlChange(6, 13))
 			},
 			"CC6 value after NRPN and reset",
-			"NRPN(1,2) on channel 0 MSB 23 | NRPN RESET on channel 0 | CC6 on channel 0: 13 | ",
+			"NRPN(1,2) on channel 0 MSB 23 | NRPN(1,2) LSB on channel 0: 0 | NRPN RESET on channel 0 | CC6 on channel 0: 13 | ",
 		},
 		{
 			func(w *Writer) {
@@ -243,7 +499,7 @@ func TestRPN_NRPN(t *testing.T) {
 				w.Write(channel.Channel0.ControlChange(38, 13))
 			},
 			"CC38 value after NRPN and reset",
-			"NRPN(1,2) on channel 0 MSB 23 | NRPN RESET on channel 0 | CC38 on channel 0: 13 | ",
+			"NRPN(1,2) on channel 0 MSB 23 | NRPN(1,2) LSB on channel 0: 0 | NRPN RESET on channel 0 | CC38 on channel 0: 13 | ",
 		},
 		{
 			func(w *Writer) {
