@@ -5,6 +5,10 @@ Based on https://github.com/gomidi/midi.
 
 [![Build Status Travis/Linux](https://travis-ci.org/gomidi/mid.svg?branch=master)](http://travis-ci.org/gomidi/mid) [![Coverage Status](https://coveralls.io/repos/github/gomidi/mid/badge.svg)](https://coveralls.io/github/gomidi/mid) [![Go Report](https://goreportcard.com/badge/github.com/gomidi/mid)](https://goreportcard.com/report/github.com/gomidi/mid) [![Documentation](http://godoc.org/github.com/gomidi/mid?status.png)](http://godoc.org/github.com/gomidi/mid)
 
+## Notice - Moved
+
+ Development has moved to GitLab https://gitlab.com/gomidi. It is recommended to use the code there instead, as the repos at Gitlab contains newer fixes, and some import references contained in the github repo may be broken
+
 ## Description
 
 Package mid provides an easy abstraction for reading and writing of "live" `MIDI` and `SMF` 
