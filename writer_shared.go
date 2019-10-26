@@ -15,11 +15,6 @@ type midiWriter struct {
 	noConsolidation bool
 }
 
-// GMReset resets the channel to some GM based standards (see Reset) and sets the given GM program.
-func (w *midiWriter) GMReset(prog uint8) error {
-	return w.Reset(0, prog)
-}
-
 // SetChannel sets the channel for the following midi messages
 // Channel numbers are counted from 0 to 15 (MIDI channel 1 to 16).
 // The initial channel number is 0.
@@ -262,55 +257,6 @@ func (w *midiWriter) CcOn(controller uint8) error {
 // SysEx writes system exclusive data
 func (w *midiWriter) SysEx(data []byte) error {
 	return w.wr.Write(sysex.SysEx(data))
-}
-
-// silentium for a single channel
-func (w *midiWriter) silentium(ch uint8, force bool) (err error) {
-	for key, val := range w.noteState[ch] {
-		if force || val {
-			err = w.wr.Write(channel.Channel(ch).NoteOff(uint8(key)))
-		}
-	}
-
-	if force {
-		err = w.wr.Write(channel.Channel(ch).ControlChange(cc.AllNotesOff, 0))
-		err = w.wr.Write(channel.Channel(ch).ControlChange(cc.AllSoundOff, 0))
-	}
-	return
-}
-
-// Silence sends a  note off message for every running note
-// on the given channel. If the channel is -1, every channel is affected.
-// If note consolidation is switched off, notes aren't tracked and therefor
-// every possible note will get a note off. This could also be enforced by setting
-// force to true. If force is true, additionally the cc messages AllNotesOff (123) and AllSoundOff (120)
-// are send.
-// If channel is > 15, the method panics.
-// The error or not error of the last write is returned.
-// (i.e. it does not return on the first error, but tries everything instead to make it silent)
-func (w *midiWriter) Silence(ch int8, force bool) (err error) {
-	if ch > 15 {
-		panic("invalid channel number")
-	}
-	if w.noConsolidation {
-		force = true
-	}
-
-	// single channel
-	if ch >= 0 {
-		err = w.silentium(uint8(ch), force)
-		// set note states for the channel
-		w.noteState[ch] = [128]bool{}
-		return
-	}
-
-	// all channels
-	for c := 0; c < 16; c++ {
-		err = w.silentium(uint8(c), force)
-	}
-	// reset all note states
-	w.noteState = [16][128]bool{}
-	return
 }
 
 // ConsolidateNotes enables/disables the midi note consolidation (default: enabled)
