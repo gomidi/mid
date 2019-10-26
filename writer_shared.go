@@ -3,7 +3,6 @@ package mid
 import (
 	"fmt"
 
-	"github.com/gomidi/cc"
 	"github.com/gomidi/midi"
 	"github.com/gomidi/midi/midimessage/channel"
 	"github.com/gomidi/midi/midimessage/sysex"
@@ -19,44 +18,6 @@ type midiWriter struct {
 // GMReset resets the channel to some GM based standards (see Reset) and sets the given GM program.
 func (w *midiWriter) GMReset(prog uint8) error {
 	return w.Reset(0, prog)
-}
-
-// Reset "resets" channel to some established defaults
-/*
-  bank select -> bank
-  program change -> prog
-  cc all controllers off
-  cc volume -> 100
-  cc expression -> 127
-  cc hold pedal -> off
-  cc pan position -> 64
-  cc RPN pitch bend sensitivity -> 2 (semitones)
-*/
-func (w *midiWriter) Reset(bank uint8, prog uint8) error {
-	var msgs = []midi.Message{
-		w.ch.ControlChange(cc.BankSelectMSB, bank),
-		w.ch.ProgramChange(prog),
-		w.ch.ControlChange(cc.AllControllersOff, 0),
-		w.ch.ControlChange(cc.VolumeMSB, 100),
-		w.ch.ControlChange(cc.ExpressionMSB, 127),
-		w.ch.ControlChange(cc.HoldPedalSwitch, 0),
-		w.ch.ControlChange(cc.PanPositionMSB, 64),
-	}
-
-	for _, msg := range msgs {
-		err := w.Write(msg)
-
-		if err != nil {
-			return fmt.Errorf("could not reset channel %v: %v", w.ch.Channel(), err)
-		}
-	}
-
-	err := w.PitchBendSensitivityRPN(2, 0)
-
-	if err != nil {
-		return fmt.Errorf("could not reset channel %v: %v", w.ch.Channel(), err)
-	}
-	return nil
 }
 
 // SetChannel sets the channel for the following midi messages

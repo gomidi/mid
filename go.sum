@@ -1,5 +1,3 @@
-github.com/gomidi/cc v0.2.0 h1:2IRNKQvLFl1nq974v0psFYBBzn95ZceNeKxK2eByFc8=
-github.com/gomidi/cc v0.2.0/go.mod h1:pp/v4mQ8/Z6O7KoGukAO9MNQ5nhUUgAJlJU7XsC4IpI=
 github.com/gomidi/connect v0.9.0 h1:UpX2PBl3660JEpKk2Q3uwuLsbc2AVoySBVkwTGbHyAA=
 github.com/gomidi/connect v0.9.0/go.mod h1:zu6PoN7Xs/37thtXZ+4Wl1MMg8MxenS7U/M3rn6trNo=
 github.com/gomidi/connect v0.10.0 h1:8oym4O321D4hbN/DW4NwEDpF5P0IuMK3JZThc/Y1SDA=
