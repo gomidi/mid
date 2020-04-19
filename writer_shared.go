@@ -46,8 +46,8 @@ func (w *midiWriter) NoteOffVelocity(key, velocity uint8) error {
 
 // NoteOn writes a note on message for the current channel
 // By default, midi notes are consolidated (see ConsolidateNotes method)
-func (w *midiWriter) NoteOn(key, veloctiy uint8) error {
-	return w.Write(w.ch.NoteOn(key, veloctiy))
+func (w *midiWriter) NoteOn(key, velocity uint8) error {
+	return w.Write(w.ch.NoteOn(key, velocity))
 }
 
 // Pitchbend writes a pitch bend message for the current channel
